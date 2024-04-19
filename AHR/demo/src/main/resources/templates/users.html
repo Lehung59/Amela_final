@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User </title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+</head>
+<style>
+  .page-item.active a {
+    background-color: #dea8059c;
+    color: white; /* Đổi màu sắc thành màu đỏ khi ô pagination được click */
+  }
+</style>
+<header>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="#">AppName</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/about">About</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/services">Services</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/contact">Contact</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+</header>
+<body>
+
+
+
+
+<div class="container">
+  <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
+    <h1 class="mt-5 mb-5" style="color: black;">List Employees</h1>
+  </div>
+
+  <div class = "row">
+    <div class = "col-lg-3">
+      <a th:href = "@{/admin/insert}" class = "btn btn-primary btn-sm mb-3" style="background-color: #dea8059c; color: black;"> Add Employee</a>
+    </div>
+  </div>
+  <div th:if="${users.size() > 0}">
+    <table class="table table-hover table-responsive-xl table-striped">
+      <thead class="" style=" background-color: #dea8059c; " >
+      <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Full name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Phone number</th>
+        <th scope="col">Address</th>
+        <th scope="col">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="user : ${users}">
+        <th scope="row" th:text="${user.id}"></th>
+        <td th:text="${user.firstName} +' '+${user.lastName}"></td>
+        <td th:text="${user.email}"></td>
+        <td th:text="${user.phoneNumber}"></td>
+        <td th:text="${user.address}"></td>
+        <td>
+                    <button th:attr="onclick='editUser(' + ${user.id} + ')'">
+                      <span class = "fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>
+                    </button>
+
+                    <button th:attr="onclick='confirmDelete(' + ${user.id} + ')'">
+                      <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>
+                    </button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+  <div th:unless="${users.size() > 0}">
+    <span>No tutorials found!</span>
+  </div>
+  <nav aria-label="Pagination" th:if="${totalPages > 0}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item " th:classappend="${currentPage == 1} ? 'disabled'">
+        <a th:replace="~{fragments/paging :: paging(1, '<<', 'First Page')}" style="color: black;"></a>
+      </li>
+      <li class="page-item font-weight-bold " style="color: black;" th:classappend="${currentPage == 1} ? 'disabled'">
+        <a style="color: black;" th:replace="~{fragments/paging :: paging(${currentPage - 1}, 'Prev', 'Previous Page')}" ></a>
+      </li>
+      <li class="page-item disabled" th:if="${currentPage - 2 > 1}">
+        <a style="color: black;" class="page-link black-text" href="#" >...</a>
+      </li>
+      <li class="page-item" th:classappend="${page == currentPage} ? 'active'"
+          th:each="page : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 1, currentPage + 2 < totalPages ? currentPage + 2 : totalPages)}">
+        <a style="color: black;" th:replace="~{fragments/paging :: paging(${page}, ${page}, 'Page ' + ${page})}" ></a>
+      </li>
+      <li class="page-item disabled" th:if="${currentPage + 2 < totalPages}">
+        <a style="color: black;" class="page-link black-text" href="#" >...</a>
+      </li>
+      <li class="page-item font-weight-bold" th:classappend="${currentPage == totalPages} ? 'disabled'">
+        <a  th:replace="~{fragments/paging :: paging(${currentPage + 1},'Next', 'Next Page')}" style="color: black;"></a>
+      </li>
+      <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+        <a class="black-text" th:replace="~{fragments/paging :: paging(${totalPages}, '>>', 'Last Page')}" style="color: black;"></a>
+      </li>
+    </ul>
+  </nav>
+
+
+
+
+
+<!--<div th:if="${users.size() > 0}">-->
+<!--    <table class="table table-striped table-bordered">-->
+<!--      <thead>-->
+<!--      <tr>-->
+<!--        <th scope="col">Id</th>-->
+<!--        <th scope="col">Full name</th>-->
+<!--        <th scope="col">Email</th>-->
+<!--        <th scope="col">Phone number</th>-->
+<!--        <th scope="col">Address</th>-->
+<!--        <th scope="col">Actions</th>-->
+<!--      </tr>-->
+<!--      </thead>-->
+<!--      <tbody>-->
+<!--      <tr th:each = "user: ${users}">-->
+<!--        <td th:text="${user.id}"></td>-->
+<!--        <td th:text="${user.firstName}+' '+${user.lastName}"></td>-->
+<!--        <td th:text="${user.email}"></td>-->
+<!--        <td th:text="${user.phoneNumber}"></td>-->
+<!--        <td th:text="${user.address}"></td>-->
+<!--        <td>-->
+<!--          <a th:href = "@{/user/edit/{id}(id=${user.id})}"-->
+<!--             class = "btn btn-primary text-white">Update</a>-->
+
+<!--          <button class="btn btn-danger text-white" onclick="confirmDelete('${user.id}')">Delete</button>-->
+<!--        </td>-->
+<!--      </tr>-->
+
+<!--      </tbody>-->
+<!--    </table>-->
+<!--</div>-->
+
+
+
+
+<!--  -->
+<!--  <div th:if="${totalPage}>1" th:with="pagePost">-->
+
+
+<!--  </div>-->
+
+
+
+<!--  <div th:if="${totalPage > 1}">-->
+<!--    <div class="row col-sm-10">-->
+<!--      <div class="col-sm-2">-->
+<!--        Total Items: <span th:text="${totalItem}">Placeholder</span>-->
+
+<!--      </div>-->
+<!--      <div class="col-sm-1">-->
+<!--                    <span th:each="i: ${#numbers.sequence(1, totalPage)}">-->
+<!--      <a th:if="${currentPage != i}" th:href="@{'/page/' + ${i}}">[[${i}]]</a>-->
+<!--      <span th:unless="${currentPage != i}">[[${i}]]</span> &nbsp; &nbsp;-->
+<!--                    </span>-->
+<!--      </div>-->
+<!--      <div class="col-sm-1">-->
+<!--        <a th:if="${currentPage < totalPage}" th:href="@{'/page/' + ${currentPage + 1}}">Next</a>-->
+<!--        <span th:unless="${currentPage < totalPage}">Next</span>-->
+<!--      </div>-->
+
+<!--      <div class="col-sm-1">-->
+<!--        <a th:if="${currentPage < totalPage}" th:href="@{'/page/' + ${totalPage}}">Last</a>-->
+<!--        <span th:unless="${currentPage < totalPage}">Last</span>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+
+<!--  </div>-->
+<!--</div>-->
+
+
+</div>
+</body>
+</html>
+  <script>
+    function confirmDelete(userId) {
+      if (confirm("Are you sure you want to delete this user?")) {
+        // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
+        window.location.href = "/admin/delete/" + userId;
+      }
+    }
+
+    function editUser(userId){
+      window.location.href = "/user/edit/" + userId;
+    }
+    let paginationItems = document.querySelectorAll('.page-item');
+
+    // Lặp qua mỗi ô pagination và thêm sự kiện click
+    paginationItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        // Xóa lớp active từ tất cả các ô pagination
+        paginationItems.forEach(function(element) {
+          element.classList.remove('active');
+        });
+        // Thêm lớp active cho ô pagination được click
+        this.classList.add('active');
+      });
+    });
+
+  </script>

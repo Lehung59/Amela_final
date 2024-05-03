@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
+    <link rel="stylesheet" th:href="@{/templates/css/insert_form.css}" >
+
+</head>
+<header th:replace="~{fragments/navbar}">
+
+</header>
+<body>
+<section class="vh-100 gradient-custom">
+    <div class="container py-5 h-100">
+        <div class="row justify-content-center align-items-center h-100">
+            <div class="col-12 col-lg-9 col-xl-7">
+                <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
+                    <div class="card-body p-4 p-md-5">
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Add attendance</h3>
+                        <form th:action="@{/admin/attendance/insert}" th:object="${attendance}" method="POST">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" th:field="*{user.email}" id="email" class="form-control form-control-lg" />
+                                        <label class="form-label" for="email">Email</label>
+<!--                                        <p th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{user.email}"></p>-->
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6 mb-4">
+
+                                    <div data-mdb-input-init class="form-outline datepicker w-100">
+                                        <input type="date" th:field="*{dateCheck}" class="form-control form-control-lg" id="dateCheck" />
+                                        <label for="dateCheck" class="form-label">Ngày chấm công</label>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6 mb-2 pb-2">
+
+                                    <h6 class="mb-2 pb-1">Trạng thái: </h6>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="late" th:value="${LATE}" checked/>
+                                        <label class="form-check-label" for="late">Muộn</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="miss" th:value="${MISS}" />
+                                        <label class="form-check-label" for="miss">Vắng</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4 pb-2">
+                                    <div id="formContent" style="display:none;">
+                                        <h6>Ghi chú</h6>
+                                        <label>
+                                            <textarea th:field="*{note}" rows="4" cols="45"></textarea>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4 pb-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" th:field="*{allowed}" type="checkbox" id="permissionCheckbox" th:value=1 onchange="toggleFormVisibility()" />
+                                        <label class="form-check-label" for="permissionCheckbox">Có phép</label>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="mt-1 pt-1">
+                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="submit" value="Submit" />
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
+<script>
+    function toggleFormVisibility() {
+        const form = document.getElementById("formContent");
+        const isChecked = document.getElementById("permissionCheckbox").checked;
+        form.style.display = isChecked ? "block" : "none";
+    }
+</script>

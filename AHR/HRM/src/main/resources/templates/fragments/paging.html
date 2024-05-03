@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>User </title>
+  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
+</head>
+<body>
+<a th:fragment="paging(url, pageNum, label, tooltip)" class="page-link"
+   th:href="@{${url}+ '?' + 'page=' + ${pageNum} + '&size=' + ${pageSize}}"
+   th:title="${tooltip}" rel="tooltip">
+  [[${label}]]
+</a>
+<div th:fragment="pagination(url)">
+  <nav aria-label="Pagination" th:if="${totalPages > 0}">
+    <ul class="pagination justify-content-center">
+      <li class="page-item " th:classappend="${currentPage == 1} ? 'disabled'">
+          <a th:replace="~{fragments/paging :: paging(${url},1, '<<', 'First Page')}" style="color: black;"></a>
+      </li>
+      <li class="page-item font-weight-bold " style="color: black;" th:classappend="${currentPage == 1} ? 'disabled'">
+        <a style="color: black;" th:replace="~{fragments/paging :: paging(${url},${currentPage - 1}, 'Prev', 'Previous Page')}" ></a>
+      </li>
+      <li class="page-item disabled" th:if="${currentPage - 2 > 1}">
+        <a style="color: black;" class="page-link black-text" href="#" >...</a>
+      </li>
+      <li class="page-item" th:classappend="${page == currentPage} ? 'active'"
+          th:each="page : ${#numbers.sequence(currentPage > 2 ? currentPage - 2 : 1, currentPage + 2 < totalPages ? currentPage + 2 : totalPages)}">
+        <a style="color: black;" th:replace="~{fragments/paging :: paging(${url},${page}, ${page}, 'Page ' + ${page})}" ></a>
+      </li>
+      <li class="page-item disabled" th:if="${currentPage + 2 < totalPages}">
+        <a style="color: black;" class="page-link black-text" href="#" >...</a>
+      </li>
+      <li class="page-item font-weight-bold" th:classappend="${currentPage == totalPages} ? 'disabled'">
+        <a  th:replace="~{fragments/paging :: paging(${url}, ${currentPage + 1},'Next', 'Next Page')}" style="color: black;"></a>
+      </li>
+      <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+        <a class="black-text" th:replace="~{fragments/paging :: paging(${url}, ${totalPages}, '>>', 'Last Page')}" style="color: black;"></a>
+      </li>
+    </ul>
+  </nav>
+</div>
+</body>
+</html>

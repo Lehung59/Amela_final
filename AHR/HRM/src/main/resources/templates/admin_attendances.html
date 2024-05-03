@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>User </title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+</head>
+<style>
+    .page-item.active a {
+        border: 1px solid #ccc;
+        background-color: #dea8059c;
+        color: white;
+    }
+</style>
+<!--<header th:replace="~{fragments/navbar}">-->
+
+<!--</header>-->
+<body>
+<div th:replace="~{fragments/barside}">
+
+</div>
+<div class="container">
+    <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
+        <h1 class="mt-5 mb-5" style="color: black;">List Attendances</h1>
+    </div>
+
+
+    <!--  <div>-->
+    <!--    <form th:action="@{/users}" id="searchForm">-->
+    <!--      <div class="row d-flex">-->
+    <!--        <div class="col-md-6 mt-2">-->
+    <!--          <div class="search">-->
+    <!--            <i class="fa fa-search"></i>-->
+    <!--            <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"-->
+    <!--                   placeholder="Enter keyword">-->
+    <!--            <button type="submit" class="btn btn-secondary">Search</button>-->
+    <!--          </div>-->
+    <!--        </div>-->
+    <!--        <div class="col-md-3 input-group mt-2">-->
+    <!--          <div class="input-group-prepend">-->
+    <!--            <label class="input-group-text" for="pageSize">Items per page:</label>-->
+    <!--          </div>-->
+    <!--          <select form="searchForm" name="size" th:value="${pageSize}" onchange="changePageSize()" class="size-select"-->
+    <!--                  id="pageSize">-->
+    <!--            <option th:each="s : ${ {3, 6, 9} }" th:value="${s}" th:text="${s}" th:selected="${s == pageSize}"></option>-->
+    <!--          </select>-->
+    <!--        </div>-->
+    <!--        <div class="col-md-1 mt-2">-->
+    <!--          <button id="btnClear" class="btn btn-info">Clear</button>-->
+    <!--        </div>-->
+    <!--      </div>-->
+    <!--    </form>-->
+    <!--  </div>-->
+
+
+
+    <div class = "row">
+        <div class = "col-lg-2">
+            <a th:href = "@{/admin/attendance/insert}" class = "btn btn-primary btn-sm mb-3" style="background-color: #dea8059c; color: black;"> Add Attendance</a>
+        </div>
+    </div>
+    <div th:if="${attendances.size() > 0}">
+        <table class="table table-hover table-responsive-xl table-striped">
+            <thead class="" style=" background-color: #dea8059c; " >
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Email</th>
+                <th scope="col">Full name</th>
+                <th scope="col">Date check </th>
+                <th scope="col">Time check in</th>
+                <th scope="col">Time check out</th>
+                <th scope="col">Status</th>
+                <th scope="col">Allowed</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="attendance : ${attendances}">
+                <th scope="row" th:text="${attendance.id}"></th>
+                <td th:text="${attendance.user.email}"></td>
+                <td th:text="${attendance.user.firstName} +' '+${attendance.user.lastName}"></td>
+                <td th:if="${attendance.dateCheck != null}" th:text="${attendance.dateCheck}"></td>
+                <td th:unless="${attendance.dateCheck != null}" style="text-align: center;">-</td>
+                <td th:if="${attendance.timeCheckIn != null}" th:text="${attendance.timeCheckIn}"></td>
+                <td th:unless="${attendance.timeCheckIn != null}" style="text-align: center;">-</td>
+                <td th:if="${attendance.timeCheckOut != null}" th:text="${attendance.timeCheckOut}"></td>
+                <td th:unless="${attendance.timeCheckOut != null}" style="text-align: center;">-</td>
+                <td th:text="${attendance.status}"></td>
+                <td th:if="${attendance.allowed != null}" th:text="${attendance.allowed}"></td>
+                <td th:unless="${attendance.allowed != null}" style="text-align: center;">-</td>
+
+                <td>
+<!--                    <button th:attr="onclick='editUser(' + ${attendance.id} + ')'">-->
+<!--                        <span class = "fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>-->
+<!--                    </button>-->
+<!--                    <button th:attr="onclick='confirmDelete(' + ${attendance.id} + ')'">-->
+<!--                        <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>-->
+<!--                    </button>-->
+
+                    <button >
+                        <i class="fa-solid fa-circle-info" style="color: #eea738"></i>
+<!--                        <span class = "fa-regular fa-ellipsis-vertical icon-dark" style="color: #eea738"></span>-->
+                    </button>
+                    <button th:attr="onclick='editUser(' + ${attendance.id} + ')'" >
+                        <span class = "fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>
+                    </button>
+                    <button>
+                        <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:unless="${attendances.size() > 0}">
+        <span>No tutorials found!</span>
+    </div>
+<div th:replace="~{fragments/paging :: pagination('/admin/attendances')}"></div>
+
+
+
+
+
+    <!--<div th:if="${users.size() > 0}">-->
+    <!--    <table class="table table-striped table-bordered">-->
+    <!--      <thead>-->
+    <!--      <tr>-->
+    <!--        <th scope="col">Id</th>-->
+    <!--        <th scope="col">Full name</th>-->
+    <!--        <th scope="col">Email</th>-->
+    <!--        <th scope="col">Phone number</th>-->
+    <!--        <th scope="col">Address</th>-->
+    <!--        <th scope="col">Actions</th>-->
+    <!--      </tr>-->
+    <!--      </thead>-->
+    <!--      <tbody>-->
+    <!--      <tr th:each = "user: ${users}">-->
+    <!--        <td th:text="${user.id}"></td>-->
+    <!--        <td th:text="${user.firstName}+' '+${user.lastName}"></td>-->
+    <!--        <td th:text="${user.email}"></td>-->
+    <!--        <td th:text="${user.phoneNumber}"></td>-->
+    <!--        <td th:text="${user.address}"></td>-->
+    <!--        <td>-->
+    <!--          <a th:href = "@{/user/edit/{id}(id=${user.id})}"-->
+    <!--             class = "btn btn-primary text-white">Update</a>-->
+
+    <!--          <button class="btn btn-danger text-white" onclick="confirmDelete('${user.id}')">Delete</button>-->
+    <!--        </td>-->
+    <!--      </tr>-->
+
+    <!--      </tbody>-->
+    <!--    </table>-->
+    <!--</div>-->
+
+
+
+
+    <!--  -->
+    <!--  <div th:if="${totalPage}>1" th:with="pagePost">-->
+
+
+    <!--  </div>-->
+
+
+
+    <!--  <div th:if="${totalPage > 1}">-->
+    <!--    <div class="row col-sm-10">-->
+    <!--      <div class="col-sm-2">-->
+    <!--        Total Items: <span th:text="${totalItem}">Placeholder</span>-->
+
+    <!--      </div>-->
+    <!--      <div class="col-sm-1">-->
+    <!--                    <span th:each="i: ${#numbers.sequence(1, totalPage)}">-->
+    <!--      <a th:if="${currentPage != i}" th:href="@{'/page/' + ${i}}">[[${i}]]</a>-->
+    <!--      <span th:unless="${currentPage != i}">[[${i}]]</span> &nbsp; &nbsp;-->
+    <!--                    </span>-->
+    <!--      </div>-->
+    <!--      <div class="col-sm-1">-->
+    <!--        <a th:if="${currentPage < totalPage}" th:href="@{'/page/' + ${currentPage + 1}}">Next</a>-->
+    <!--        <span th:unless="${currentPage < totalPage}">Next</span>-->
+    <!--      </div>-->
+
+    <!--      <div class="col-sm-1">-->
+    <!--        <a th:if="${currentPage < totalPage}" th:href="@{'/page/' + ${totalPage}}">Last</a>-->
+    <!--        <span th:unless="${currentPage < totalPage}">Last</span>-->
+    <!--      </div>-->
+    <!--    </div>-->
+    <!--  </div>-->
+
+    <!--  </div>-->
+    <!--</div>-->
+
+
+</div>
+</body>
+</html>
+<script>
+    function confirmDelete(userId) {
+        if (confirm("Are you sure you want to delete this user?")) {
+            // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
+            window.location.href = "/admin/delete/" + userId;
+        }
+    }
+
+    function editUser(attendanceId){
+        window.location.href = "/admin/attendance/edit/" + attendanceId;
+    }
+    let paginationItems = document.querySelectorAll('.page-item');
+
+    // Lặp qua mỗi ô pagination và thêm sự kiện click
+    paginationItems.forEach(function(item) {
+        item.addEventListener('click', function() {
+            // Xóa lớp active từ tất cả các ô pagination
+            paginationItems.forEach(function(element) {
+                element.classList.remove('active');
+            });
+            // Thêm lớp active cho ô pagination được click
+            this.classList.add('active');
+        });
+    });
+
+</script>

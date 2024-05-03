@@ -42,20 +42,20 @@ public class UserController {
         }
 
 //        model.addAttribute("users",userService.getAllUser());
-        return "users";
+        return "admin_users";
     }
     @GetMapping("/admin/insert")
     public String addEmployee(Model model ){
 
         User user = new User();
         model.addAttribute("user",user);
-        return "user_add";
+        return "admin_user_add";
     }
     @PostMapping("/admin/insert")
     public String saveEmployee(@Valid @ModelAttribute("user")User user,
                                BindingResult bindingResult){
         if(bindingResult.hasErrors()){
-            return "user_add";
+            return "admin_user_add";
         }
 
         userService.save(user);
@@ -70,47 +70,18 @@ public class UserController {
     @GetMapping("/user/edit/{id}")
     public String editEmployeeForm(@PathVariable int id, Model model) {
         model.addAttribute("user", userService.getUserById(id));
-        return "edit_user";
+        return "admin_user_edit";
     }
     @PostMapping("/user/{id}")
     public String updateUser(@PathVariable int id,
                              @Valid @ModelAttribute("user")User user,
                              BindingResult bindingResult) {
         if(bindingResult.hasErrors()){
-            return "edit_user";
+            return "admin_user_edit";
         }
         // get student from database by id
         user.setId(id);
         userService.updateUser(user);
-
-//        User exUser = userService.getUserById(id);
-//        exUser.setId(id);
-//        exUser.setFirstName(user.getFirstName());
-//        exUser.setLastName(user.getLastName());
-//        exUser.setEmail(user.getEmail());
-//        exUser.setMale();
-//        // save updated student object
-//        userRepo.save(exUser);
         return "redirect:/users";
     }
-
-//    @GetMapping("/page/{pageNo}")
-//    public String findPaginated(@PathVariable("pageNo") int pageNo, Model model){
-//        int pageSize=5;
-//        Page<User> page = userService.findPaginated(pageNo,pageSize);
-//        List<User> users= page.getContent();
-//        model.addAttribute("currentPage", pageNo);
-//        model.addAttribute("totalPage",page.getTotalPages());
-//        model.addAttribute("totalItem", page.getTotalElements());
-//        model.addAttribute("users",users);
-//        return "users";
-//
-//    }
-//    @GetMapping("/")
-//    public String viewHomePage(Model model) {
-//        return findPaginated(1, model);
-//    }
-
-
-
 }

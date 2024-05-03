@@ -13,9 +13,7 @@
     color: white;
   }
 </style>
-<!--<header th:replace="~{fragments/navbar}">-->
 
-<!--</header>-->
 <body>
 <div th:replace="~{fragments/barside}">
 
@@ -24,37 +22,6 @@
   <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
     <h1 class="mt-5 mb-5" style="color: black;">List Employees</h1>
   </div>
-
-
-<!--  <div>-->
-<!--    <form th:action="@{/users}" id="searchForm">-->
-<!--      <div class="row d-flex">-->
-<!--        <div class="col-md-6 mt-2">-->
-<!--          <div class="search">-->
-<!--            <i class="fa fa-search"></i>-->
-<!--            <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"-->
-<!--                   placeholder="Enter keyword">-->
-<!--            <button type="submit" class="btn btn-secondary">Search</button>-->
-<!--          </div>-->
-<!--        </div>-->
-<!--        <div class="col-md-3 input-group mt-2">-->
-<!--          <div class="input-group-prepend">-->
-<!--            <label class="input-group-text" for="pageSize">Items per page:</label>-->
-<!--          </div>-->
-<!--          <select form="searchForm" name="size" th:value="${pageSize}" onchange="changePageSize()" class="size-select"-->
-<!--                  id="pageSize">-->
-<!--            <option th:each="s : ${ {3, 6, 9} }" th:value="${s}" th:text="${s}" th:selected="${s == pageSize}"></option>-->
-<!--          </select>-->
-<!--        </div>-->
-<!--        <div class="col-md-1 mt-2">-->
-<!--          <button id="btnClear" class="btn btn-info">Clear</button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </form>-->
-<!--  </div>-->
-
-
-
   <div class = "row">
     <div class = "col-lg-2">
       <a th:href = "@{/admin/insert}" class = "btn btn-primary btn-sm mb-3" style="background-color: #dea8059c; color: black;"> Add Employee</a>
@@ -114,15 +81,11 @@
       window.location.href = "/user/edit/" + userId;
     }
     let paginationItems = document.querySelectorAll('.page-item');
-
-    // Lặp qua mỗi ô pagination và thêm sự kiện click
     paginationItems.forEach(function(item) {
       item.addEventListener('click', function() {
-        // Xóa lớp active từ tất cả các ô pagination
         paginationItems.forEach(function(element) {
           element.classList.remove('active');
         });
-        // Thêm lớp active cho ô pagination được click
         this.classList.add('active');
       });
     });

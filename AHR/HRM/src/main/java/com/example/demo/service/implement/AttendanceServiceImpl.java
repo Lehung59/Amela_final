@@ -9,12 +9,11 @@ import com.example.demo.form.AttendanceForm;
 import com.example.demo.repository.AttendanceRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.AttendanceService;
-import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Date;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -46,41 +45,72 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public void saveAttendance(Attendance attendance) {
+    public void saveAttendance(Attendance attendance)
+    {
         LocalDate checkDate = attendance.getDateCheck();
         String email = attendance.getUser().getEmail();
-        if(userRepo.findByEmail(email).isEmpty()){
-            throw new MailNotFoundException("Not found email: " + email);
-        }
-        if(attendanceRepo.findByEmailAndDate(email,checkDate).isPresent() ){
-            throw new AttendanceExistException("Exist this attendance. Please edit it");
-        }
+//        if(userRepo.findByEmail(email).isEmpty()){
+//            throw new MailNotFoundException("Not found email: " + email);
+//        }
+//        if(attendanceRepo.findByEmailAndDate(email,checkDate).isPresent() ){
+//            throw new AttendanceExistException("Exist this attendance. Please edit it");
+//        }
         User user = userRepo.findByEmail(email).get();
 
 
         Attendance newObj = new Attendance();
         if (attendance.isAllowed()) {
             newObj.setAllowed(true);
-        } else newObj.setAllowed(false);
+            newObj.setNote(attendance.getNote());
+        } else {
+            newObj.setAllowed(false);
+            newObj.setNote(null);
+        }
         newObj.setDateCheck(checkDate);
         newObj.setUser(user);
         newObj.setNote(attendance.getNote());
-        newObj.setStatus(attendance.getStatus());
-
+        if(attendance.getStatus().equals(Attendance.AttendanceStatus.MISS) ){
+            newObj.setStatus(Attendance.AttendanceStatus.MISS);
+        } else if(attendance.getStatus().equals(Attendance.AttendanceStatus.LATE) ){
+            newObj.setStatus(Attendance.AttendanceStatus.LATE);
+        } else if(attendance.getTimeCheckIn().isAfter(LocalTime.parse("08:00:00"))){
+            newObj.setStatus(Attendance.AttendanceStatus.LATE);
+        } else {
+            newObj.setStatus(Attendance.AttendanceStatus.ONTIME);
+        }
         attendanceRepo.save(newObj);
     }
 
     @Override
-    public Attendance updateAttendance(AttendanceForm attendanceForm) {
+    public void updateAttendance(AttendanceForm attendanceForm) {
         Attendance attendance = mapFormToEntity(attendanceForm);
         Attendance oldObj = attendanceRepo.findById(attendance.getId()).get();
         oldObj.setDateCheck(attendance.getDateCheck());
         if(attendance.getTimeCheckOut() != null) oldObj.setTimeCheckOut(attendance.getTimeCheckOut());
         if(attendance.getTimeCheckIn() != null) oldObj.setTimeCheckIn(attendance.getTimeCheckIn());
         if(attendance.getNote() != null) oldObj.setNote(attendance.getNote());
-        if(attendance.getStatus() != null) oldObj.setStatus(attendance.getStatus());
-        oldObj.setAllowed(attendance.isAllowed());
-        return attendanceRepo.save(oldObj);
+
+        if(attendance.getTimeCheckIn().isBefore(LocalTime.parse("08:00:00"))) {
+            oldObj.setStatus(Attendance.AttendanceStatus.ONTIME);
+        }  else if(attendance.getTimeCheckIn().isAfter(LocalTime.parse("08:00:00"))) {
+            oldObj.setStatus(Attendance.AttendanceStatus.LATE);
+        }else if(attendance.getStatus().equals(Attendance.AttendanceStatus.MISS) ){
+            oldObj.setStatus(Attendance.AttendanceStatus.MISS);
+        } else if(attendance.getStatus().equals(Attendance.AttendanceStatus.LATE) ){
+            oldObj.setStatus(Attendance.AttendanceStatus.LATE);
+        }
+//        if(attendance.getStatus() != null) oldObj.setStatus(attendance.getStatus());
+//        oldObj.setAllowed(attendance.isAllowed());
+
+        if (attendance.isAllowed()) {
+            oldObj.setAllowed(true);
+            oldObj.setNote(attendance.getNote());
+        } else {
+            oldObj.setAllowed(false);
+            oldObj.setNote(null);
+        }
+
+        attendanceRepo.save(oldObj);
     }
 
     @Override

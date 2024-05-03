@@ -35,9 +35,16 @@
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="date" th:field="*{dateCheck}" class="form-control form-control-lg" id="dateCheck" />
                                         <label for="dateCheck" class="form-label">Ngày chấm công</label>
+<!--                                        <span th:if="${#fields.hasErrors('dateCheck')}" th:errors="*{dateCheck}">Error!</span>-->
+
                                     </div>
+<!--                                    <p th:if="${#fields.hasErrors('dateCheck')}" class="text-danger" th:errors="*{dateCheck}"></p>-->
 
                                 </div>
+
+<!--                                <p th:if="${#fields.hasErrors('user.email')}" class="text-danger" th:errors="*{user.email}"></p>-->
+
+
                             </div>
 
                             <div class="row">

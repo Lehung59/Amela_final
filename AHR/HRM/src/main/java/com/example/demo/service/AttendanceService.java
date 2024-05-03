@@ -9,7 +9,7 @@ public interface AttendanceService {
     List<Attendance> getAllAttendance();
     Attendance getAttendanceById(int id);
     void saveAttendance(Attendance attendance);
-    Attendance updateAttendance(AttendanceForm attendanceForm);
+    void updateAttendance(AttendanceForm attendanceForm);
     void deleteAttendance(int id);
 
 }

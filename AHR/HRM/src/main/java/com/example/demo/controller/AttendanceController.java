@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.exception.AttendanceExistException;
 import com.example.demo.form.AttendanceForm;
 import com.example.demo.entity.Attendance;
 import com.example.demo.repository.AttendanceRepo;
@@ -12,14 +13,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
+
 @Controller
 @RequiredArgsConstructor
 public class AttendanceController {
     private final AttendanceService attendanceService;
     private final AttendanceRepo attendanceRepo;
+    private AttendanceExistException attendanceExistException;
 
     @GetMapping("/admin/attendances")
     public String listAttendance(Model model,
@@ -51,33 +56,44 @@ public class AttendanceController {
         model.addAttribute("LATE",Attendance.AttendanceStatus.LATE);
         model.addAttribute("MISS",Attendance.AttendanceStatus.MISS);
         model.addAttribute("ONTIME",Attendance.AttendanceStatus.ONTIME);
+
         return "admin_attendance_add";
 
     }
     @PostMapping("/admin/attendance/insert")
     public String saveAttendance(@Valid @ModelAttribute("attendance")Attendance attendance,
-                               BindingResult bindingResult){
+                               BindingResult bindingResult)  {
+        List<Attendance> newObj = attendanceRepo.findByEmailAndDate(attendance.getUser().getEmail(), attendance.getDateCheck());
+        if(!newObj.isEmpty()){
+
+//            ObjectError error = new ObjectError("attendance", "Đã tồn tại chấm công này");
+            bindingResult.rejectValue("dateCheck", "Đã tồn tại chấm công này");
+//            bindingResult.addError(error);
+        }
+
         if(bindingResult.hasErrors()){
+
             return "admin_attendance_add";
         }
+
         attendanceService.saveAttendance(attendance);
         return "redirect:/admin/attendances";
 
     }
-//    @GetMapping("/admin/delete/{id}")
-//    public String deleteEmployee(@PathVariable int id) {
-//        userService.deleteUserById(id);
-//        return "redirect:/users";
-//    }
+    @GetMapping("/admin/attendance/delete/{id}")
+    public String deleteAttendance(@PathVariable int id) {
+        attendanceService.deleteAttendance(id);
+        return "redirect:/admin/attendances";
+    }
 
-//    @GetMapping("/admin/attendance/view/{id}")
-//    public String viewAttendanceForm(@PathVariable int id, Model model) {
-//        model.addAttribute("LATE",Attendance.AttendanceStatus.LATE);
-//        model.addAttribute("MISS",Attendance.AttendanceStatus.MISS);
-//        model.addAttribute("ONTIME",Attendance.AttendanceStatus.ONTIME);
-//        model.addAttribute("attendance", attendanceService.getAttendanceById(id));
-//        return "admin_attendance_view";
-//    }
+    @GetMapping("/admin/attendance/view/{id}")
+    public String viewAttendanceForm(@PathVariable int id, Model model) {
+        model.addAttribute("LATE",Attendance.AttendanceStatus.LATE);
+        model.addAttribute("MISS",Attendance.AttendanceStatus.MISS);
+        model.addAttribute("ONTIME",Attendance.AttendanceStatus.ONTIME);
+        model.addAttribute("attendance", attendanceService.getAttendanceById(id));
+        return "admin_attendance_view";
+    }
 
     @GetMapping("/admin/attendance/edit/{id}")
     public String editAttendanceForm(@PathVariable int id, Model model) {

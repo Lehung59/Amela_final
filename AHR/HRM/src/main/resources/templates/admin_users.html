@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <title>User </title>
-  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
 </head>
 <style>
-  .page-item.active a {
-    background-color: #dea8059c;
-    color: white;
-  }
+    .page-item.active a {
+        background-color: #dea8059c;
+        color: white;
+    }
 </style>
 
 <body>
@@ -19,75 +19,105 @@
 
 </div>
 <div class="container">
-  <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
-    <h1 class="mt-5 mb-5" style="color: black;">List Employees</h1>
-  </div>
-  <div class = "row">
-    <div class = "col-lg-2">
-      <a th:href = "@{/admin/insert}" class = "btn btn-primary btn-sm mb-3" style="background-color: #dea8059c; color: black;"> Add Employee</a>
+    <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
+        <h1 class="mt-5 mb-5" style="color: black;">List Employees</h1>
     </div>
-  </div>
-  <div th:if="${users.size() > 0}">
-    <table class="table table-hover table-responsive-xl table-striped">
-      <thead class="" style=" background-color: #dea8059c; " >
-      <tr>
-        <th scope="col">Id</th>
-        <th scope="col">Full name</th>
-        <th scope="col">Email</th>
-        <th scope="col">Phone number</th>
-        <th scope="col">Address</th>
-        <th scope="col">Actions</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr th:each="user : ${users}">
-        <th scope="row" th:text="${user.id}"></th>
-        <td th:text="${user.firstName} +' '+${user.lastName}"></td>
-        <td th:text="${user.email}"></td>
-        <td th:text="${user.phoneNumber}"></td>
-        <td th:text="${user.address}"></td>
-        <td>
-            <button >
-              <span class="fa-solid fa-user"></span>
-            </button>
-            <button th:attr="onclick='editUser(' + ${user.id} + ')'">
-              <span class = "fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>
-            </button>
+    <div class="d-flex justify-content-between">
+        <div class="">
+            <a th:href="@{/admin/insert}" class="btn btn-primary btn-sm mb-3"
+               style="background-color: #dea8059c; color: black;"> Add Employee</a>
+        </div>
 
-            <button th:attr="onclick='confirmDelete(' + ${user.id} + ')'">
-              <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>
-            </button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
-  <div th:unless="${users.size() > 0}">
-    <span>No tutorials found!</span>
-  </div>
-<div th:replace="~{fragments/paging :: pagination('/users')}"></div>
+        <div class="">
+            <form>
+                <div class="input-group d-flex">
+                    <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"
+                           placeholder="Enter keyword">
+                    <button type="submit" class="btn btn-secondary"
+                            style="background-color: #dea8059c; color: #333333 ">Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div th:if="${users.size() > 0}">
+        <table class="table table-hover table-responsive-xl table-striped">
+            <thead class="" style=" background-color: #dea8059c; ">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Full name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Phone number</th>
+                <th scope="col">Address</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <th scope="row" th:text="${user.id}"></th>
+                <td th:text="${user.firstName} +' '+${user.lastName}"></td>
+                <td th:text="${user.email}"></td>
+                <td th:text="${user.phoneNumber}"></td>
+                <td th:text="${user.address}"></td>
+                <td>
+                    <button>
+                        <span class="fa-solid fa-user"></span>
+                    </button>
+                    <button th:attr="onclick='editUser(' + ${user.id} + ')'">
+                        <span class="fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>
+                    </button>
+
+                    <button th:attr="onclick='confirmDelete(' + ${user.id} + ')'">
+                        <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>
+                    </button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:unless="${users.size() > 0}">
+        <span>No tutorials found!</span>
+    </div>
+    <div th:replace="~{fragments/paging :: pagination('/users')}"></div>
 </div>
 </body>
 </html>
-  <script>
-    function confirmDelete(userId) {
-      if (confirm("Are you sure you want to delete this user?")) {
-        // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
-        window.location.href = "/admin/delete/" + userId;
-      }
-    }
+<script>
+    import {Input, Ripple, initMDB} from "mdb-ui-kit";
+    $(document).ready(function () {
+        // ...
 
-    function editUser(userId){
-      window.location.href = "/user/edit/" + userId;
-    }
-    let paginationItems = document.querySelectorAll('.page-item');
-    paginationItems.forEach(function(item) {
-      item.addEventListener('click', function() {
-        paginationItems.forEach(function(element) {
-          element.classList.remove('active');
+        $("#btnClear").on("click", function (e) {
+            e.preventDefault();
+            $("#keyword").text("");
+            window.location = "[[@{/tutorials}]]";
         });
-        this.classList.add('active');
-      });
     });
 
-  </script>
+    function changePageSize() {
+        $("#searchForm").submit();
+    }
+    initMDB({Input, Ripple});
+
+    function confirmDelete(userId) {
+        if (confirm("Are you sure you want to delete this user?")) {
+            // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
+            window.location.href = "/admin/delete/" + userId;
+        }
+    }
+
+    function editUser(userId) {
+        window.location.href = "/user/edit/" + userId;
+    }
+
+    let paginationItems = document.querySelectorAll('.page-item');
+    paginationItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+            paginationItems.forEach(function (element) {
+                element.classList.remove('active');
+            });
+            this.classList.add('active');
+        });
+    });
+
+</script>

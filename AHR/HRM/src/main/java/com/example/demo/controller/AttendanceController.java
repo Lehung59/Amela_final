@@ -10,12 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,15 +28,43 @@ public class AttendanceController {
     private final AttendanceRepo attendanceRepo;
     private AttendanceExistException attendanceExistException;
 
+//
+//    @GetMapping("/admin/attendances/{pageNumber}")
+//    public String getUserByPage(@PathVariable(value = "pageNumber") int pageNumber,
+//                                @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
+//                                Model model) {
+//
+//        Page<Attendance> pageAttendance = attendanceService.getAllUser(pageNumber, keyword);
+//        List<Attendance> attendances = pageAttendance.getContent();
+//
+//        model.addAttribute("attendances", attendances);
+//        model.addAttribute("currentPage", pageNumber);
+//        model.addAttribute("totalPages", pageAttendance.getTotalPages());
+//        model.addAttribute("totalItems", pageAttendance.getTotalElements());
+//        model.addAttribute("keyword", keyword);
+//
+//        return "admin_attendances";
+//    }
+
     @GetMapping("/admin/attendances")
     public String listAttendance(Model model,
-                           @RequestParam(defaultValue = "1") int page,
-                           @RequestParam(defaultValue = "5") int size){
+                                 @RequestParam(required = false) String keyword,
+                                 @RequestParam(defaultValue = "1") int page,
+                                 @RequestParam(defaultValue = "3") int size){
 
         try {
+            List<Attendance> attendances = new ArrayList<Attendance>();
             Pageable paging = PageRequest.of(page - 1, size);
-            Page<Attendance> pageTuts= attendanceRepo.findAll(paging);;
-            List<Attendance> attendances= pageTuts.getContent();
+
+            Page<Attendance> pageTuts;
+            if (keyword == null) {
+                pageTuts = attendanceRepo.findAll(paging);
+            } else {
+                pageTuts = attendanceRepo.findByTitleContainingIgnoreCase(keyword, paging);
+                model.addAttribute("keyword", keyword);
+            }
+
+            attendances = pageTuts.getContent();
 
             model.addAttribute("attendances", attendances);
             model.addAttribute("currentPage", pageTuts.getNumber() + 1);

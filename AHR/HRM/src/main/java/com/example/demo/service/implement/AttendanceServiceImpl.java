@@ -1,8 +1,6 @@
 package com.example.demo.service.implement;
 
-import com.example.demo.exception.AttendanceExistException;
 import com.example.demo.exception.AttendanceNotFoundException;
-import com.example.demo.exception.MailNotFoundException;
 import com.example.demo.entity.Attendance;
 import com.example.demo.entity.User;
 import com.example.demo.form.AttendanceForm;
@@ -10,6 +8,7 @@ import com.example.demo.repository.AttendanceRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.AttendanceService;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -122,6 +121,40 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
         attendanceRepo.deleteById(id);
     }
+
+//    @Override
+//    public Page<Attendance>  searchAttendance(String keyword, int pageNo, int pageSize) {
+//        List<Attendance> list = this.searchAttendance(keyword);
+//        Pageable pageable = PageRequest.of(pageNo-1,pageSize);
+//
+//        int start = (int) pageable.getOffset();
+//        int end = (int) ((pageable.getOffset() + pageable.getPageSize() ) > list.size() ? list.size() : pageable.getOffset() + pageable.getPageSize()) ;
+//        list = list.subList(start, end);
+//        return new PageImpl<>(list, pageable, list.size());
+//    }
+
+//    public Page<Attendance> getAllUser(int pageNumber, String keyword) {
+//        Pageable pageable = PageRequest.of(pageNumber - 1, 5, Sort.by("id").ascending());
+//
+//        Page<User> page;
+//
+//        if (keyword!=null) {
+//            return attendanceRepo.findAll(keyword, pageable);
+//        }
+//
+//        return attendanceRepo.findAll(pageable);
+//    }
+
+
+//    @Override
+//    public List<Attendance> searchAttendance(String keyword) {
+//        return attendanceRepo.searchAttendance(keyword);
+//    }
+
+
+
+
+
     public Attendance mapFormToEntity(AttendanceForm form) {
         Attendance entity = modelMapper.map(form, Attendance.class);
         return entity;

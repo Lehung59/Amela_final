@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.entity.Attendance;
 import com.example.demo.entity.User;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.UserService;
@@ -13,6 +14,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.ui.Model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -24,13 +26,22 @@ public class UserController {
 
     @GetMapping("/users")
     public String listUser(Model model,
+                           @RequestParam(required = false) String keyword,
                            @RequestParam(defaultValue = "1") int page,
-                           @RequestParam(defaultValue = "5") int size){
+                           @RequestParam(defaultValue = "3") int size){
 
         try {
+            List<User> users = new ArrayList<User>();
             Pageable paging = PageRequest.of(page - 1, size);
             Page<User> pageTuts= userRepo.findAll(paging);;
-            List<User> users= pageTuts.getContent();
+            if (keyword == null) {
+                pageTuts = userRepo.findAll(paging);
+            } else {
+                pageTuts = userRepo.findByTitleContainingIgnoreCase(keyword, paging);
+                model.addAttribute("keyword", keyword);
+            }
+            users = pageTuts.getContent();
+
 
             model.addAttribute("users", users);
             model.addAttribute("currentPage", pageTuts.getNumber() + 1);

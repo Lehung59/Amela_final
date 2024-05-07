@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserRepo extends JpaRepository<User, Integer> {
@@ -22,6 +23,9 @@ public interface UserRepo extends JpaRepository<User, Integer> {
             + "or o.address like %?1%"
             + "or CONCAT(o.firstName, ' ', o.lastName) LIKE %?1%")
     Page<User> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
+
+    @Query("select o.email from User o ")
+    Set<String> getAllEmail();
 
 //    Page<User> findByTitleContainingIgnoreCase(String keyword, Pageable paging);
 }

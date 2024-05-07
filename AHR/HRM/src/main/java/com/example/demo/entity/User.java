@@ -62,8 +62,11 @@ public class User {
     @JsonManagedReference
     private List<Attendance> attendances;
 //
-//    @OneToMany(mappedBy = "user")
-//    @JsonManagedReference
-//    private List<Mail> mails;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "users_mails",
+    joinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id"),
+    inverseJoinColumns = @JoinColumn(name = "mail_id",referencedColumnName = "mailid"))
+    @JsonManagedReference
+    private List<Mail> mails;
 
 }

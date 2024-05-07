@@ -1,6 +1,8 @@
-package com.example.demo.entity;
+package com.example.demo.form;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.example.demo.entity.Mail;
+import com.example.demo.entity.MailStatus;
+import com.example.demo.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,57 +15,33 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "mail")
-public class Mail {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "mailid")
+@Data
+public class MailForm {
+
     private int mailId;
 
-    @Column(name = "mailrecipient", nullable = false)
     private String mailRecipient;
 
-    @Column(name = "date_send")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateSend;
 
-    @Column(name = "time_send")
     @DateTimeFormat(pattern = "HH:mm:ss")
     private LocalTime timeSend;
 
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private MailStatus status;
 
-    @Column(name = "content")
     private String content;
 
-    @Column(name = "title")
     private String title;
 
-    @Column(name = "created_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    @Column(name = "updated_at")
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-    // Getters and setters
-
-//    public enum MailStatus {
-//        SENT, FAILED, PENDING, DRAFT
-//    }
-
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "mails")
-    @JsonBackReference
-    List<User> users;
-
-
+    private List<User> users;
 }

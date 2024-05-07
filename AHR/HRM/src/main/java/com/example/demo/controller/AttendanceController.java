@@ -118,9 +118,9 @@ public class AttendanceController {
 
     @GetMapping("/admin/attendance/view/{id}")
     public String viewAttendanceForm(@PathVariable int id, Model model) {
-        model.addAttribute("LATE",Attendance.AttendanceStatus.LATE);
-        model.addAttribute("MISS",Attendance.AttendanceStatus.MISS);
-        model.addAttribute("ONTIME",Attendance.AttendanceStatus.ONTIME);
+        model.addAttribute("LATE", Attendance.AttendanceStatus.LATE);
+        model.addAttribute("MISS", Attendance.AttendanceStatus.MISS);
+        model.addAttribute("ONTIME", Attendance.AttendanceStatus.ONTIME);
         model.addAttribute("attendance", attendanceService.getAttendanceById(id));
         return "admin_attendance_view";
     }

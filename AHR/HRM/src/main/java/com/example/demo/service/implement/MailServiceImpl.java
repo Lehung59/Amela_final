@@ -1,9 +1,11 @@
 package com.example.demo.service.implement;
 
+import com.example.demo.entity.User;
 import com.example.demo.form.MailForm;
 import com.example.demo.exception.MailNotFoundException;
 import com.example.demo.entity.Mail;
 import com.example.demo.repository.MailRepo;
+import com.example.demo.repository.UserRepo;
 import com.example.demo.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -11,8 +13,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 public class MailServiceImpl implements com.example.demo.service.MailService {
 
     private final MailRepo mailRepo;
+    private final UserRepo userRepo;
 
     @Override
     public List<MailForm> getAllMail() {
@@ -47,12 +49,40 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     public void updateMail(MailForm mailForm) {
         Mail mail = convertToMail(mailForm);
         Optional<Mail> oldObj = mailRepo.findById(mail.getMailId());
+        mailRepo.deleteAllUsersByMailId(mail.getMailId());
+
+        String listMails = mailForm.getMailRecipient().replaceAll("\\s+", "");
+        List<String> emailList = Arrays.asList(listMails.split(","));
+        List<User> foundUsers = new ArrayList<>();
+        for (String email : emailList) {
+            Optional<User> userOptional = userRepo.findByEmail(email);
+            if(userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
+            userOptional.ifPresent(foundUsers::add);
+        }
+
         if (oldObj.isEmpty()) {
             throw new MailNotFoundException("Mail not found with ID: " + mail.getMailId());
         }
-
-
         Mail oldMail = oldObj.get();
+        oldMail.getUsers().clear();
+
+        // Thêm người dùng mới vào danh sách liên kết
+        oldMail.getUsers().addAll(foundUsers);
+//        List<User> usersToRemove = new ArrayList<>();
+//        for (User user : oldMail.getUsers()) {
+//            if (!foundUsers.contains(user)) {
+//                usersToRemove.add(user);
+//            }
+//        }
+//        oldMail.getUsers().removeAll(usersToRemove);
+
+        // Thêm danh sách người dùng mới
+//        for (User user : foundUsers) {
+//            if (!oldMail.getUsers().contains(user)) {
+//                oldMail.getUsers().add(user);
+//            }
+//        }
+
         oldMail.setMailRecipient(mail.getMailRecipient());
         oldMail.setContent(mail.getContent());
         if(mail.getStatus()!=null)
@@ -60,7 +90,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         oldMail.setTitle(mail.getTitle());
         oldMail.setDateSend(mail.getDateSend());
         oldMail.setUpdatedAt(DateUtils.getCurrentDay());
-        oldMail.setUsers(mail.getUsers());
+        oldMail.setUsers(foundUsers);
         mailRepo.save(oldMail);
     }
 
@@ -99,7 +129,9 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     private MailForm convertToMailDto(Mail mail) {
         MailForm mailForm = new MailForm();
         mailForm.setMailId(mail.getMailId());
-        mailForm.setMailRecipient(mailRepo.findRecipentByMailId(mail.getMailId()));
+//        mailForm.setMailRecipient(mailRepo.findRecipentByMailId(mail.getMailId()));
+        mailForm.setMailRecipient(mail.getMailRecipient());
+
         mailForm.setDateSend(mail.getDateSend());
         mailForm.setTimeSend(mail.getTimeSend());
         mailForm.setStatus(mail.getStatus());

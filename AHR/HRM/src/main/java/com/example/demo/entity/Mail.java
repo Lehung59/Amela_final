@@ -65,5 +65,10 @@ public class Mail {
     @JsonBackReference
     List<User> users;
 
-
+    public void setUsers(List<User> users) {
+        this.users = users;
+        for (User user : users) {
+            user.getMails().add(this);
+        }
+    }
 }

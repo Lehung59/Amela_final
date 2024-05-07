@@ -11,27 +11,32 @@
             opacity: 1.0;
             filter: none;
         }
+
         .autocomplete {
             /*the container must be positioned relative:*/
             position: relative;
-            display:flex;
+            display: flex;
             align-items: center;
             /*display: inline-block;*/
         }
+
         input {
             border: 1px solid transparent;
             background-color: #f1f1f1;
             padding: 10px;
             font-size: 16px;
         }
+
         input[type=text] {
             background-color: #f1f1f1;
             width: 100%;
         }
+
         input[type=submit] {
             background-color: DodgerBlue;
             color: #fff;
         }
+
         .autocomplete-items {
             position: absolute;
             border: 1px solid #d4d4d4;
@@ -43,16 +48,19 @@
             left: 0;
             right: 0;
         }
+
         .autocomplete-items div {
             padding: 10px;
             cursor: pointer;
             background-color: #fff;
             border-bottom: 1px solid #d4d4d4;
         }
+
         .autocomplete-items div:hover {
             /*when hovering an item:*/
             background-color: #e9e9e9;
         }
+
         .autocomplete-active {
             /*when navigating through the items using the arrow keys:*/
             background-color: DodgerBlue !important;
@@ -75,25 +83,29 @@
 
 
                         <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Thông tin mail</h3>
-                        <form th:action="@{/admin/mail/edit/{id}(id=${mail.mailId})}" th:object="${mail}" method="POST" onsubmit="return confirmSubmit();">
+                        <form th:action="@{/admin/mail/edit/{id}(id=${mail.mailId})}" th:object="${mail}" method="POST"
+                              onsubmit="return confirmSubmit();" >
                             <div class="row">
                                 <div class="col-md-6 mb-4">
 
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formReceive">
                                             <h6>Người nhận </h6>
-                                            <form autocomplete="off"  >
-                                                <div class="autocomplete" style="width:300px; margin-bottom: 10px; display: inline-block;">
+                                            <div>
+                                                <div class="autocomplete"
+                                                     style="width:300px; margin-bottom: 10px; display: inline-block;">
                                                     <div class="autocomplete" style="width:300px; margin-bottom: 10px;">
-                                                        <input class="rounded" id="myInput" type="text" name="myCountry" placeholder="Email" style="margin-left: 5px;">
-                                                        <i onclick="addToRecipient()" class="px-3 fa-solid fa-2x fa-circle-plus" style="cursor: pointer;"></i>
+                                                        <input class="rounded" id="myInput" type="text" name="myCountry"
+                                                               placeholder="Email" style="margin-left: 5px;">
+                                                        <i onclick="addToRecipient()"
+                                                           class="px-3 fa-solid fa-2x fa-circle-plus"
+                                                           style="cursor: pointer;"></i>
                                                     </div>
                                                 </div>
-
-
-                                            </form>
+                                            </div>
                                             <label>
-                                                <textarea class="rounded" th:field="*{mailRecipient}" rows="4" cols="35" ></textarea>
+                                                <textarea class="rounded" th:field="*{mailRecipient}" rows="4"
+                                                          cols="35"></textarea>
                                             </label>
                                         </div>
                                     </div>
@@ -103,11 +115,13 @@
                                     <div class="" style="margin-left: 100px;">
                                         <div data-mdb-input-init class="form-outline mb-3">
                                             <h6>Ngày gửi</h6>
-                                            <input type="date" class="form-control" id="datepicker" th:field="*{dateSend}" autocomplete="off"/>
+                                            <input type="date" class="form-control" id="datepicker"
+                                                   th:field="*{dateSend}" autocomplete="off"/>
                                         </div>
                                         <div data-mdb-input-init class="form-outline mb-3">
                                             <h6>Giờ gửi</h6>
-                                            <input type="time" class="form-control" id="timepicker" th:field="*{timeSend}" autocomplete="off"/>
+                                            <input type="time" class="form-control" id="timepicker"
+                                                   th:field="*{timeSend}" autocomplete="off"/>
                                         </div>
 
                                     </div>
@@ -120,71 +134,38 @@
                                     <div id="formHeader">
                                         <h6>Tiêu đề</h6>
                                         <label>
-                                                <textarea class="rounded" th:field="*{title}" rows="2" cols="65" ></textarea>
+                                            <textarea class="rounded" th:field="*{title}" rows="2" cols="65"></textarea>
                                         </label>
                                     </div>
-
                                 </div>
-
                             </div>
+
                             <div class="row">
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formContent">
                                             <h6>Nội dung</h6>
                                             <label>
-                                                <textarea class="rounded" th:field="*{content}" rows="5" cols="65" ></textarea>
+                                                <textarea class="rounded" th:field="*{content}" rows="5"
+                                                          cols="65"></textarea>
                                             </label>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
-                            <!--                            <div class="row">-->
-                            <!--                                <div class="col-md-6 mb-2 pb-2" >-->
-
-                            <!--                                    <h6 class="mb-2 pb-1">Trạng thái: </h6>-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="ontime" th:value="${ONTIME}" th:checked="*{status == 'ONTIME'}" disabled />-->
-                            <!--                                        <label class="form-check-label" for="ontime">Đúng giờ</label>-->
-                            <!--                                    </div>-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="late" th:value="${LATE}" th:checked="*{status == 'LATE'}" disabled/>-->
-                            <!--                                        <label class="form-check-label" for="late">Muộn</label>-->
-                            <!--                                    </div>-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="miss" th:value="${MISS}" th:checked="*{status == 'MISS'}" disabled/>-->
-                            <!--                                        <label class="form-check-label" for="miss">Vắng</label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
-                            <!--                            <div class="row">-->
-                            <!--                                <div class="col-md-6 mb-4 pb-2" >-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{allowed}" type="checkbox" id="permissionCheckbox" th:value="true" th:checked="*{allowed}" onchange="toggleFormContentReadOnly()" disabled/>-->
-                            <!--                                        <label class="form-check-label" for="permissionCheckbox">Có phép</label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                                <div class="col-md-6 mb-4 pb-2">-->
-                            <!--                                    <div id="formContent">-->
-                            <!--                                        <h6>Ghi chú</h6>-->
-                            <!--                                        <label>-->
-                            <!--                                            <textarea th:field="*{note}" rows="4" cols="40" readonly></textarea>-->
-                            <!--                                        </label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
 
                             <div class="mt-1 pt-1 ">
                                 <!--                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="button" value="Edit" th:attr="onclick='editAttendance(' + ${attendance.id} + ')'" />-->
                                 <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
                                        type="button" value="Back" th:attr="onclick='backToMails()'"/>
 
-                                <input th:attr="disabled=${mail.status} == ${SENT}" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
-                                        style="margin-left: 390px;" type="submit" value="Submit"/>
+                                <input th:attr="disabled=${mail.status} == ${SENT}" data-mdb-button-init
+                                       data-mdb-ripple-init class="btn btn-primary btn-lg"
+                                       style="margin-left: 390px;" type="submit" value="Submit"/>
 
                             </div>
                         </form>
+
                     </div>
                 </div>
             </div>
@@ -227,11 +208,13 @@
         the text field element and an array of possible autocompleted values:*/
         var currentFocus;
         /*execute a function when someone writes in the text field:*/
-        inp.addEventListener("input", function(e) {
+        inp.addEventListener("input", function (e) {
             var a, b, i, val = this.value;
             /*close any already open lists of autocompleted values*/
             closeAllLists();
-            if (!val) { return false;}
+            if (!val) {
+                return false;
+            }
             currentFocus = -1;
             /*create a DIV element that will contain the items (values):*/
             a = document.createElement("DIV");
@@ -251,7 +234,7 @@
                     /*insert a input field that will hold the current array item's value:*/
                     b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
                     /*execute a function when someone clicks on the item value (DIV element):*/
-                    b.addEventListener("click", function(e) {
+                    b.addEventListener("click", function (e) {
                         /*insert the value for the autocomplete text field:*/
                         inp.value = this.getElementsByTagName("input")[0].value;
                         /*close the list of autocompleted values,
@@ -263,7 +246,7 @@
             }
         });
         /*execute a function presses a key on the keyboard:*/
-        inp.addEventListener("keydown", function(e) {
+        inp.addEventListener("keydown", function (e) {
             var x = document.getElementById(this.id + "autocomplete-list");
             if (x) x = x.getElementsByTagName("div");
             if (e.keyCode == 40) {
@@ -287,6 +270,7 @@
                 }
             }
         });
+
         function addActive(x) {
             /*a function to classify an item as "active":*/
             if (!x) return false;
@@ -297,12 +281,14 @@
             /*add class "autocomplete-active":*/
             x[currentFocus].classList.add("autocomplete-active");
         }
+
         function removeActive(x) {
             /*a function to remove the "active" class from all autocomplete items:*/
             for (var i = 0; i < x.length; i++) {
                 x[i].classList.remove("autocomplete-active");
             }
         }
+
         function closeAllLists(elmnt) {
             /*close all autocomplete lists in the document,
             except the one passed as an argument:*/
@@ -313,6 +299,7 @@
                 }
             }
         }
+
         /*execute a function when someone clicks in the document:*/
         document.addEventListener("click", function (e) {
             closeAllLists(e.target);
@@ -320,19 +307,16 @@
     }
 
     autocomplete(document.getElementById("myInput"), mailList);
-    // $(document).ready(function () {
-    //     $('#datepicker').datepicker({
-    //         format: 'yyyy-mm-dd', //
-    //         autoclose: true
-    //     });
-    // });
+
     function confirmSubmit() {
         // Hi?n th? h?p tho?i xác nh?n
         let confirmed = confirm("Are you sure you want to submit?");
 
+        alert("submit")
         // Tr? v? true n?u ng??i dùng xác nh?n, ng??c l?i tr? v? false
         return confirmed;
     }
+
     function backToMails() {
         window.location.href = "/admin/mails";
     }

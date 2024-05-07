@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.Attendance;
 import com.example.demo.entity.User;
+import com.example.demo.form.UserForm;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
@@ -63,16 +64,26 @@ public class UserController {
         return "admin_user_add";
     }
     @PostMapping("/admin/insert")
-    public String saveEmployee(@Valid @ModelAttribute("user")User user,
+    public String saveEmployee(@Valid @ModelAttribute("user") UserForm userForm,
                                BindingResult bindingResult){
         if(bindingResult.hasErrors()){
             return "admin_user_add";
         }
 
-        userService.save(user);
+        userService.save(userForm);
         return "redirect:/users";
 
     }
+    @GetMapping("/user/active/{id}")
+    public String activeUser(@PathVariable int id, Model model){
+        userRepo.findById(id).ifPresent(
+                user -> {user.setIsActived(true);
+                userRepo.save(user);
+                }
+        );
+        return "redirect:/users";
+    }
+
     @GetMapping("/admin/delete/{id}")
     public String deleteEmployee(@PathVariable int id) {
         userService.deleteUserById(id);

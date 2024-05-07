@@ -28,23 +28,7 @@ public class AttendanceController {
     private final AttendanceRepo attendanceRepo;
     private AttendanceExistException attendanceExistException;
 
-//
-//    @GetMapping("/admin/attendances/{pageNumber}")
-//    public String getUserByPage(@PathVariable(value = "pageNumber") int pageNumber,
-//                                @RequestParam(value = "keyword", required = false, defaultValue = "") String keyword,
-//                                Model model) {
-//
-//        Page<Attendance> pageAttendance = attendanceService.getAllUser(pageNumber, keyword);
-//        List<Attendance> attendances = pageAttendance.getContent();
-//
-//        model.addAttribute("attendances", attendances);
-//        model.addAttribute("currentPage", pageNumber);
-//        model.addAttribute("totalPages", pageAttendance.getTotalPages());
-//        model.addAttribute("totalItems", pageAttendance.getTotalElements());
-//        model.addAttribute("keyword", keyword);
-//
-//        return "admin_attendances";
-//    }
+
 
     @GetMapping("/admin/attendances")
     public String listAttendance(Model model,

@@ -48,6 +48,7 @@
                 <th scope="col">Full name</th>
                 <th scope="col">Email</th>
                 <th scope="col">Phone number</th>
+                <th scope="col">Active</th>
                 <th scope="col">Address</th>
                 <th scope="col">Actions</th>
             </tr>
@@ -58,6 +59,7 @@
                 <td th:text="${user.firstName} +' '+${user.lastName}"></td>
                 <td th:text="${user.email}"></td>
                 <td th:text="${user.phoneNumber}"></td>
+                <td th:text="${user.isActived}"></td>
                 <td th:text="${user.address}"></td>
                 <td>
                     <button>

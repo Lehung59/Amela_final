@@ -44,6 +44,8 @@ public class User {
     private String avatar;
     @Column(name = "role")
     private Role role;
+    @Column(name = "is_actived")
+    private Boolean isActived;
     @Column(name = "is_male")
     private boolean isMale;
     @Temporal(TemporalType.DATE) // Ensure the date is handled as a SQL DATE

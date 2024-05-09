@@ -3,119 +3,302 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-  <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
-  <link rel="stylesheet" th:href="@{/templates/css/insert_form.css}" >
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/templates/css/insert_form.css}">
+    <script th:src="@{/webjars/jquery/3.7.0/dist/jquery.min.js}"></script>
 
 </head>
-<header th:replace="~{fragments/navbar}">
+
+<header th:replace="~{fragments/barside}">
 
 </header>
+
+<script >
+
+    var checkEmailURL = 'http://localhost:8080/check/user/email';
+    var checkPhoneURL = 'http://localhost:8080/check/user/phone';
+
+
+    async function validateEmail() {
+        var emailInput = document.getElementById('emailAddress');
+        var email = emailInput.value;
+        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        var errorElement = document.getElementById('emailError');
+
+        // Kiểm tra định dạng email
+        if (!emailRegex.test(email)) {
+            errorElement.innerText = 'Vui lòng nhập địa chỉ email hợp lệ.';
+            emailInput.focus();
+            return false; // Email không hợp lệ
+        }
+
+        // Xóa lỗi định dạng trước khi kiểm tra tính duy nhất
+        errorElement.innerText = '';
+
+        // Kiểm tra tính duy nhất của email
+        var dataEmail = {email: email};
+        var isUnique = await checkUnique(checkEmailURL, dataEmail, errorElement, `Email ${email} đã tồn tại.`);
+
+        return isUnique; // Trả về true nếu email hợp lệ và duy nhất, ngược lại trả về false
+    }
+
+
+    async function validatePhone() {
+        console.log("Starting validatePhone function");
+
+        // Getting the phone number input element and value
+        var phoneInput = document.getElementById('phoneNumber');
+        var phone = phoneInput.value;
+        var phoneRegex = /^[0-9]+$/; // Adjust regex to fit your phone number format
+        var errorElement = document.getElementById('phoneError');
+
+        // Validate phone number format using a regex pattern
+        if (!phoneRegex.test(phone) || phone.length !== 10) {
+            errorElement.innerText = 'Vui lòng nhập số điện thoại hợp lệ (10 chữ số).';
+            phoneInput.focus();
+            return false; // Invalid phone number format or length
+        }
+
+        // Clear format errors before checking for uniqueness
+        errorElement.innerText = '';
+
+        // Check the uniqueness of the phone number
+        var dataPhone = { phone: phone };
+        var isUnique = await checkUnique(checkPhoneURL, dataPhone, errorElement, `Số điện thoại đã tồn tại.`);
+
+        return isUnique; // Return true if the phone is valid and unique, otherwise false
+    }
+    function checkUnique(url, data, errorElement, message) {
+        console.log("Starting checkUnique function");
+        console.log("URL:", url);
+        console.log("Data to be sent:", data);
+
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: "GET",
+                data: data,
+                success: function (response) {
+                    console.log("Received response from server:", response);
+
+                    if (response === "TRUNG") {
+                        console.log("Response indicates duplicate found.");
+                        errorElement.innerText = message; // Set the error message
+                        resolve(false); // Indicate the item is not unique
+                    } else {
+                        console.log("Response indicates no duplicate found.");
+                        errorElement.innerText = ''; // Clear any error message
+                        resolve(true); // Indicate the item is unique
+                    }
+                },
+                error: function (ex) {
+                    console.error("Error during AJAX request:", ex);
+                    alert("Không thể kết nối đến máy chủ.");
+                    reject(ex); // Indicate failure of the API call
+                }
+            });
+        });
+    }
+
+
+</script>
 <body>
 <section class="vh-100 gradient-custom">
-  <div class="container py-5 h-100">
-    <div class="row justify-content-center align-items-center h-100">
-      <div class="col-12 col-lg-9 col-xl-7">
-        <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
-          <div class="card-body p-4 p-md-5">
-            <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Registration Form</h3>
-            <form th:action="@{/admin/insert}" th:object="${user}" method="POST">
+    <div class="container py-5 h-100">
+        <div class="row justify-content-center align-items-center h-100">
+            <div class="col-12 col-lg-9 col-xl-7">
+                <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
+                    <div class="card-body p-4 p-md-5">
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Registration Form</h3>
+                        <form th:action="@{/admin/insert}" th:object="${user}" method="POST">
 
-              <div class="row">
-                <div class="col-md-6 mb-4">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
 
-                  <div data-mdb-input-init class="form-outline">
-                    <input type="text" th:field="*{firstName}" id="firstName" class="form-control form-control-lg" />
-                    <label class="form-label" for="firstName">First Name</label>
-                    <p th:if="${#fields.hasErrors('firstName')}" class="text-danger" th:errors="*{firstName}"></p>
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" th:field="*{firstName}" id="firstName"
+                                               class="form-control form-control-lg"/>
+                                        <label class="form-label" for="firstName">First Name</label>
+                                        <p th:if="${#fields.hasErrors('firstName')}" class="text-danger"
+                                           th:errors="*{firstName}"></p>
 
-                  </div>
+                                    </div>
 
+                                </div>
+                                <div class="col-md-6 mb-4">
+
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" th:field="*{lastName}" id="lastName"
+                                               class="form-control form-control-lg"/>
+                                        <label class="form-label" for="lastName">Last Name</label>
+                                        <p th:if="${#fields.hasErrors('lastName')}" class="text-danger"
+                                           th:errors="*{lastName}"></p>
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4 d-flex align-items-center">
+
+                                    <div data-mdb-input-init class="form-outline datepicker w-100">
+                                        <input type="date" th:field="*{birthday}" class="form-control form-control-lg"
+                                               id="birthdayDate"/>
+                                        <label for="birthdayDate" class="form-label">Birthday</label>
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6 mb-4">
+
+                                    <h6 class="mb-2 pb-1">Gender: </h6>
+                                    <!--                  <select th:field="*{male}">-->
+                                    <!--                    <option th:value=1 th:text="Male">-->
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" th:field="*{male}" type="radio" name="gender"
+                                               id="femaleGender" th:value=0 checked/>
+                                        <label class="form-check-label" for="femaleGender">Female</label>
+                                    </div>
+                                    <!--                    </option>-->
+                                    <!--                    <option th:value=0 th:text="Female">-->
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" th:field="*{male}" type="radio" name="gender"
+                                               id="maleGender" th:value=1/>
+                                        <label class="form-check-label" for="maleGender">Male</label>
+                                    </div>
+                                    <!--                    </option>-->
+                                    </select>
+
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-4 pb-2">
+
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="email" th:field="*{email}" id="emailAddress"
+                                               class="form-control form-control-lg" onblur="validateEmail()"/>
+                                        <label class="form-label" for="emailAddress">Email</label>
+                                        <p id="emailError" class="text-danger"></p>
+                                        <!--                    <p th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{email}"></p>-->
+
+                                    </div>
+
+                                </div>
+                                <div class="col-md-6 mb-4 pb-2">
+
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="tel" th:field="*{phoneNumber}" id="phoneNumber"
+                                               class="form-control form-control-lg" onblur="validatePhone()"/>
+                                        <label class="form-label" for="phoneNumber">Phone Number</label>
+                                        <p id="phoneError" class="text-danger"></p>
+
+                                        <!--                    <p th:if="${#fields.hasErrors('phoneNumber')}" class="text-danger" th:errors="*{phoneNumber}"></p>-->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-4 pb-2">
+                                    <div data-mdb-input-init class="form-outline">
+                                        <input type="text" th:field="*{address}" id="address"
+                                               class="form-control form-control-lg"/>
+                                        <label class="form-label" for="address">Address</label>
+                                        <p th:if="${#fields.hasErrors('address')}" class="text-danger"
+                                           th:errors="*{address}"></p>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="mt-1 pt-1">
+                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
+                                       type="submit" value="Submit"/>
+                            </div>
+
+                        </form>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-4">
-
-                  <div data-mdb-input-init class="form-outline">
-                    <input type="text" th:field="*{lastName}" id="lastName" class="form-control form-control-lg" />
-                    <label class="form-label" for="lastName">Last Name</label>
-                    <p th:if="${#fields.hasErrors('lastName')}" class="text-danger" th:errors="*{lastName}"></p>
-
-                  </div>
-
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6 mb-4 d-flex align-items-center">
-
-                  <div data-mdb-input-init class="form-outline datepicker w-100">
-                    <input type="date" th:field="*{birthday}" class="form-control form-control-lg" id="birthdayDate" />
-                    <label for="birthdayDate" class="form-label">Birthday</label>
-                  </div>
-
-                </div>
-                <div class="col-md-6 mb-4">
-
-                  <h6 class="mb-2 pb-1">Gender: </h6>
-<!--                  <select th:field="*{male}">-->
-<!--                    <option th:value=1 th:text="Male">-->
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" th:field="*{male}" type="radio" name="gender" id="femaleGender" th:value=0  checked/>
-                        <label class="form-check-label" for="femaleGender">Female</label>
-                      </div>
-<!--                    </option>-->
-<!--                    <option th:value=0 th:text="Female">-->
-                      <div class="form-check form-check-inline">
-                        <input class="form-check-input" th:field="*{male}" type="radio" name="gender" id="maleGender" th:value=1 />
-                        <label class="form-check-label" for="maleGender">Male</label>
-                      </div>
-<!--                    </option>-->
-                  </select>
-
-
-
-
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-md-6 mb-4 pb-2">
-
-                  <div data-mdb-input-init class="form-outline">
-                    <input type="email" th:field="*{email}" id="emailAddress" class="form-control form-control-lg" />
-                    <label class="form-label" for="emailAddress">Email</label>
-                    <p th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{email}"></p>
-
-                  </div>
-
-                </div>
-                <div class="col-md-6 mb-4 pb-2">
-
-                  <div data-mdb-input-init class="form-outline">
-                    <input type="tel" th:field="*{phoneNumber}" id="phoneNumber" class="form-control form-control-lg" />
-                    <label class="form-label" for="phoneNumber">Phone Number</label>
-                    <p th:if="${#fields.hasErrors('phoneNumber')}" class="text-danger" th:errors="*{phoneNumber}"></p>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-md-6 mb-4 pb-2">
-                  <div data-mdb-input-init class="form-outline">
-                    <input type="text" th:field="*{address}" id="address" class="form-control form-control-lg" />
-                    <label class="form-label" for="address">Address</label>
-                    <p th:if="${#fields.hasErrors('address')}" class="text-danger" th:errors="*{address}"></p>
-                  </div>
-                </div>
-
-              </div>
-              <div class="mt-1 pt-1">
-                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="submit" value="Submit" />
-              </div>
-
-            </form>
-          </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </section>
+
 </body>
 </html>
+
+<!-- Add this in the <head> or before your script tags -->
+
+
+<!--<script>-->
+<!--    var checkEmailURL = 'http://localhost:8080/check/user/email';-->
+<!--    var checkPhoneURL = 'http://localhost:8080/check/user/phone';-->
+
+<!--    $(document).ready(function () {-->
+<!--        var emailPromise;-->
+<!--        var phonePromise;-->
+
+<!--        // Kiểm tra email-->
+<!--        $("#emailAddress").on("blur", async function (e) {-->
+<!--            if (e.target.value.trim().length > 0) {-->
+<!--                var userEmail = $("#emailAddress").val();-->
+<!--                var dataEmail = {-->
+<!--                    email: userEmail-->
+<!--                };-->
+
+<!--                emailPromise = await checkUnique(checkEmailURL, dataEmail, "#emailError", `Email ${userEmail} đã tồn tại.`);-->
+<!--            }-->
+<!--        });-->
+
+<!--        // Kiểm tra số điện thoại-->
+<!--        $("#phoneNumber").on("blur", async function (e) {-->
+<!--            if (e.target.value.trim().length > 0) {-->
+<!--                var userPhone = $("#phoneNumber").val();-->
+<!--                var dataPhone = {-->
+<!--                    phone: userPhone-->
+<!--                };-->
+<!--                phonePromise = await checkUnique(checkPhoneURL, dataPhone, "#phoneError", `Số điện thoại ${userPhone} đã tồn tại.`);-->
+<!--            }-->
+<!--        });-->
+
+<!--        // Khi submit form, kiểm tra email và số điện thoại trước-->
+<!--        $("form").submit(async function (e) {-->
+<!--            e.preventDefault(); // Ngăn chặn hành vi mặc định của form-->
+
+<!--            Promise.all([emailPromise, phonePromise]).then(function (results) {-->
+<!--                var emailUnique = results[0];-->
+<!--                var phoneUnique = results[1];-->
+
+<!--                if (emailUnique !== false && phoneUnique !== false) {-->
+<!--                    e.target.submit(); // Chỉ submit nếu cả email và số điện thoại đều hợp lệ-->
+<!--                }-->
+<!--            }).catch(function (error) {-->
+<!--                console.error("Lỗi kiểm tra email/số điện thoại:", error);-->
+<!--            });-->
+<!--        });-->
+
+<!--        // Hàm kiểm tra tính duy nhất-->
+<!--        function checkUnique(url, data, tagName, message) {-->
+<!--            return new Promise(function (resolve, reject) {-->
+<!--                $.ajax({-->
+<!--                    url: url,-->
+<!--                    type: "GET",-->
+<!--                    data: data,-->
+<!--                    success: function (response) {-->
+<!--                        if (response === "TRUNG") {-->
+<!--                            $(tagName).html(message); // Hiển thị lỗi-->
+<!--                            resolve(false);-->
+<!--                        } else {-->
+<!--                            $(tagName).html(""); // Xóa lỗi nếu không có trùng lặp-->
+<!--                            resolve(true);-->
+<!--                        }-->
+<!--                    },-->
+<!--                    error: function (ex) {-->
+<!--                        alert("Không thể kết nối đến máy chủ.");-->
+<!--                        reject(ex);-->
+<!--                    }-->
+<!--                });-->
+<!--            });-->
+<!--        }-->
+<!--    });-->
+
+<!--</script>-->

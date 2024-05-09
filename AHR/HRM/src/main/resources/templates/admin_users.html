@@ -13,16 +13,18 @@
         color: white;
     }
 </style>
+<header th:replace="~{fragments/barside}">
 
+</header>
 <body>
-<div th:replace="~{fragments/barside}">
 
-</div>
 <div class="container">
+    <div th:if="${successmess!=''}">Da them thanh cong</div>
     <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
         <h1 class="mt-5 mb-5" style="color: black;">List Employees</h1>
     </div>
     <div class="d-flex justify-content-between">
+
         <div class="">
             <a th:href="@{/admin/insert}" class="btn btn-primary btn-sm mb-3"
                style="background-color: #dea8059c; color: black;"> Add Employee</a>
@@ -62,14 +64,14 @@
                 <td th:text="${user.isActived}"></td>
                 <td th:text="${user.address}"></td>
                 <td>
-                    <button>
+                    <button th:onclick="'viewUser(' + ${user.id} + ')'">
                         <span class="fa-solid fa-user"></span>
                     </button>
-                    <button th:attr="onclick='editUser(' + ${user.id} + ')'">
+                    <button th:onclick="'editUser(' + ${user.id} + ')'">
                         <span class="fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>
                     </button>
 
-                    <button th:attr="onclick='confirmDelete(' + ${user.id} + ')'">
+                    <button th:onclick="'confirmDelete(' + ${user.id} + ')'">
                         <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>
                     </button>
                 </td>
@@ -85,22 +87,6 @@
 </body>
 </html>
 <script>
-    import {Input, Ripple, initMDB} from "mdb-ui-kit";
-    $(document).ready(function () {
-        // ...
-
-        $("#btnClear").on("click", function (e) {
-            e.preventDefault();
-            $("#keyword").text("");
-            window.location = "[[@{/tutorials}]]";
-        });
-    });
-
-    function changePageSize() {
-        $("#searchForm").submit();
-    }
-    initMDB({Input, Ripple});
-
     function confirmDelete(userId) {
         if (confirm("Are you sure you want to delete this user?")) {
             // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
@@ -111,6 +97,26 @@
     function editUser(userId) {
         window.location.href = "/user/edit/" + userId;
     }
+    function viewUser(userId) {
+        window.location.href = "/user/view/" + userId;
+    }
+    // import {Input, Ripple, initMDB} from "mdb-ui-kit";
+    // $(document).ready(function () {
+    //     // ...
+    //
+    //     $("#btnClear").on("click", function (e) {
+    //         e.preventDefault();
+    //         $("#keyword").text("");
+    //         window.location = "[[@{/tutorials}]]";
+    //     });
+    // });
+    //
+    // function changePageSize() {
+    //     $("#searchForm").submit();
+    // }
+    // initMDB({Input, Ripple});
+    //
+
 
     let paginationItems = document.querySelectorAll('.page-item');
     paginationItems.forEach(function (item) {

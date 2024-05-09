@@ -31,7 +31,7 @@ public class EmailMix {
         this.emailPass = emailPass16Words;
     }
 
-    public boolean sendContentToVer2(String toEmail, String headerEmail, String body) {
+    public boolean sendContent(String toEmail, String headerEmail, String body) {
         Properties props = new Properties();
         props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "587");

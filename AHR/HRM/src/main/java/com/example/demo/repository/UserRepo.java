@@ -27,5 +27,7 @@ public interface UserRepo extends JpaRepository<User, Integer> {
     @Query("select o.email from User o ")
     Set<String> getAllEmail();
 
+    Optional<User> findByPhoneNumber(String phone);
+
 //    Page<User> findByTitleContainingIgnoreCase(String keyword, Pageable paging);
 }

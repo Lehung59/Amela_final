@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>User </title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+
 </head>
 <style>
     /* Import Google font - Poppins */
@@ -14,6 +16,7 @@
         box-sizing: border-box;
         font-family: "Poppins", sans-serif;
     }
+
     body {
         min-height: 100vh;
         background: #eef5fe;
@@ -46,6 +49,7 @@
         padding: 15px 10px;
         box-shadow: 0 0 2px rgba(0, 0, 0, 0.1);
         transition: all 0.4s ease;
+        z-index: 10;
     }
     .sidebar.close {
         width: calc(55px + 20px);
@@ -92,7 +96,11 @@
     .menu_title {
         position: relative;
         height: 50px;
-        width: 55px;
+    }
+    .menu_item {
+        padding: 0;
+        margin-left: 15px;
+
     }
     .menu_title .title {
         margin-left: 15px;
@@ -111,9 +119,9 @@
         background: #aaa;
         transition: all 0.3s ease;
     }
-    .menu_title .line {
-        opacity: 0;
-    }
+    /*.menu_title .line {*/
+    /*    opacity: 0;*/
+    /*}*/
     .sidebar.close .line {
         opacity: 1;
     }
@@ -228,7 +236,7 @@
 <body><nav class="sidebar hoverable close">
     <div class="logo_items flex">
         <span class="nav_image">
-          <img src="images/logo.png" alt="logo_img" />
+          <img src="../images/logo.jpg" alt="logo_img" />
         </span>
         <span class="logo_name">HRM</span>
         <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
@@ -238,8 +246,8 @@
         <div class="menu_items">
             <ul class="menu_item">
                 <div class="menu_title flex">
+                    <span class="fa-solid fa-house"></span>
                     <span class="title">HomePage</span>
-                    <span class="line"></span>
                 </div>
                 <li class="item">
                     <a href="#" class="link flex">
@@ -256,8 +264,8 @@
             </ul>
             <ul class="menu_item">
                 <div class="menu_title flex">
-                    <span class="title">Nhân viên</span>
-                    <span class="line"></span>
+                    <span class="fa-solid fa-user-group"></span>
+                    <span class="title d-inline">Nhân viên</span>
                 </div>
                 <li class="item">
                     <a th:href="@{/users}" class="link flex">
@@ -281,8 +289,8 @@
             <ul class="menu_item">
 
                 <div class="menu_title flex">
+                    <span class="fa-solid fa-clipboard-user"></span>
                     <span class="title d-lg-inline">Chấm công</span>
-                    <span class="line"></span>
                 </div>
                 <li class="item">
                     <a th:href="@{/admin/attendances}" class="link flex">
@@ -305,8 +313,8 @@
             </ul>
             <ul class="menu_item">
                 <div class="menu_title flex">
+                    <span class="fa-solid fa-envelope"></span>
                     <span class="title">Mail</span>
-                    <span class="line"></span>
                 </div>
                 <li class="item">
                     <a th:href="@{/admin/mails}" class="link flex">

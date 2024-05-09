@@ -13,7 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-
+import java.util.Optional;
 
 
 @Service
@@ -28,23 +28,37 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    public void updateUser(User newUser) {
-        User exUser = userRepo.findById(newUser.getId()).get();
-        if(newUser.getEmail() != exUser.getEmail()){
-            exUser.setEmail(newUser.getEmail());
-        }
+    public void updateUser(UserForm userForm, int id) {
+        User newUser = convertToUser(userForm);
+        User exUser = userRepo.findById(id).get();
         exUser.setLastName(newUser.getLastName());
         exUser.setFirstName(newUser.getFirstName());
         exUser.setPhoneNumber(newUser.getPhoneNumber());
+        exUser.setIsActived(newUser.getIsActived());
+        if(!newUser.getEmail().equals(exUser.getEmail())){
+            exUser.setEmail(newUser.getEmail());
+            exUser.setIsActived(false);
+            String recipientAddress = userForm.getEmail();
+            String subject = "Xác nhận tài khoản";
+            String confirmationUrl
+                    =   "http://localhost:8080/user/active/"+id;
+            String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
+                    "<p>Tên tài khoản nhân viên : " + recipientAddress + ".</p>"
+                    + "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>"
+                    + "<form action='" + confirmationUrl + "' method='get'>"
+                    + "<button type='submit' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer;'>"
+                    + "Xác nhận tài khoản</button>"
+                    + "</form>";
+            EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
+//            e.sendContent(recipientAddress,subject,message);
+        }
         exUser.setAddress(newUser.getAddress());
         exUser.setAvatar(newUser.getAvatar());
         exUser.setBirthday(newUser.getBirthday());
         exUser.setUpdatedAt(DateUtils.getCurrentDay());
+        exUser.setMale(newUser.isMale());
+//        exUser.setIsActived(newUser.getIsActived());
 
-        exUser.setMale(false);
-        if (newUser.isMale()) {
-            exUser.setMale(true);
-        } else exUser.setMale(false);
         userRepo.save(exUser);
 
     }
@@ -85,7 +99,7 @@ public class UserServiceImpl implements UserService {
                 + "Xác nhận tài khoản</button>"
                 + "</form>";
         EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-        e.sendContentToVer2(recipientAddress,subject,message);
+//        e.sendContent(recipientAddress,subject,message);
     }
 
     @Override
@@ -107,6 +121,25 @@ public class UserServiceImpl implements UserService {
         return this.userRepo.findAll(pageable);
 
     }
+
+    @Override
+    public Optional<User> getUserByEmail(String email) {
+        return userRepo.findByEmail(email);
+    }
+    @Override
+    public Optional<User> getUserByPhone(String phone) {
+        return userRepo.findByPhoneNumber(phone);
+    }
+
+
+    @Override
+    public void changePassword(int id, String newPassword){
+        User user = userRepo.findById(id).get();
+        user.setPassword(newPassword);
+        userRepo.save(user);
+
+    }
+
     public static UserForm convertToUserForm(User user) {
         UserForm userForm = new UserForm();
         userForm.setId(user.getId());
@@ -138,6 +171,7 @@ public class UserServiceImpl implements UserService {
         user.setAddress(userForm.getAddress());
         user.setAvatar(userForm.getAvatar());
         user.setRole(userForm.getRole());
+        user.setIsActived(userForm.isActive());
         user.setMale(userForm.isMale());
         user.setBirthday(userForm.getBirthday());
         user.setCreatedAt(userForm.getCreatedAt());
@@ -145,4 +179,6 @@ public class UserServiceImpl implements UserService {
         user.setAttendances(userForm.getAttendances()); // Nếu cần tất cả thông tin về Attendance
         return user;
     }
+
+
 }

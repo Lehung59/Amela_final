@@ -18,11 +18,10 @@
     </style>
 </head>
 
+<header th:replace="~{fragments/barside}">
 
+</header>
 <body>
-<div th:replace="~{fragments/barside}" >
-
-</div>
 <section class="vh-100 gradient-custom">
     <div class="container py-5 h-100">
         <div class="row justify-content-center align-items-center h-100">
@@ -30,17 +29,16 @@
                 <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
                     <div class="card-body p-4 p-md-5">
                         <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Update Form</h3>
-                        <form th:action="@{/user/edit/{id}(id=${userForm.id})}" th:object="${userForm}" method="POST"
-                              onsubmit="return confirmSubmit();">
+                        <form th:action="@{/users}" th:object="${user}" method="GET"
+                               >
                             <div class="row">
                                 <div class="col-md-6 mb-4">
 
                                     <div data-mdb-input-init class="form-outline">
                                         <input type="text" th:field="*{firstName}" id="firstName"
-                                               class="form-control form-control-lg" placeholder="Enter first name"/>
+                                               class="form-control form-control-lg" placeholder="Enter first name" readonly/>
                                         <label class="form-label" for="firstName">First Name</label>
-                                        <p th:if="${#fields.hasErrors('firstName')}" class="text-danger"
-                                           th:errors="*{firstName}"></p>
+
 
                                     </div>
 
@@ -49,10 +47,9 @@
 
                                     <div data-mdb-input-init class="form-outline">
                                         <input type="text" th:field="*{lastName}" id="lastName"
-                                               class="form-control form-control-lg" placeholder="Enter first name"/>
+                                               class="form-control form-control-lg" placeholder="Enter first name" readonly/>
                                         <label class="form-label" for="lastName">Last Name</label>
-                                        <p th:if="${#fields.hasErrors('lastName')}" class="text-danger"
-                                           th:errors="*{lastName}"></p>
+
 
                                     </div>
 
@@ -64,7 +61,7 @@
 
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="date" th:field="*{birthday}" class="form-control form-control-lg"
-                                               id="birthdayDate"/>
+                                               id="birthdayDate" disabled/>
                                         <label for="birthdayDate" class="form-label">Birthday</label>
                                     </div>
 
@@ -76,13 +73,13 @@
                                         <!--                    <option th:value=1 th:text="Male">-->
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" th:field="*{male}" type="radio" name="gender"
-                                                   id="femaleGender" th:value="0" th:checked="*{!male}"/>
+                                                   id="femaleGender" th:value="0" th:checked="*{!male}" disabled/>
                                             <label class="form-check-label" for="femaleGender">Female</label>
                                         </div>
 
                                         <div class="form-check form-check-inline">
                                             <input class="form-check-input" th:field="*{male}" type="radio" name="gender"
-                                                   id="maleGender" th:value="1" th:checked="*{male}"/>
+                                                   id="maleGender" th:value="1" th:checked="*{male}" disabled/>
                                             <label class="form-check-label" for="maleGender">Male</label>
                                         </div>
                                     </div>
@@ -93,14 +90,9 @@
                                 <div class="col-md-6 mb-4 pb-2">
 
                                     <div data-mdb-input-init class="form-outline">
-                                        <input th:attr="readonly = ${role}!='admin'" type="email" th:field="*{email}"
-                                               id="emailAddress" class="form-control form-control-lg"/>
+                                        <input type="email" th:field="*{email}"
+                                               id="emailAddress" class="form-control form-control-lg" readonly/>
                                         <label class="form-label" for="emailAddress">Email</label>
-<!--                                        <p th:if="${sameMailError}"></p>-->
-<!--                                        <p th:if="${#fields.hasErrors('email')}" class="text-danger"-->
-<!--                                           th:errors="*{email}"></p>-->
-                                        <small  id="sameEmailError" class="text-danger" style="margin-left: 20px"></small>
-
                                     </div>
 
                                 </div>
@@ -108,10 +100,9 @@
 
                                     <div data-mdb-input-init class="form-outline">
                                         <input type="tel" th:field="*{phoneNumber}" id="phoneNumber"
-                                               class="form-control form-control-lg"/>
+                                               class="form-control form-control-lg" readonly/>
                                         <label class="form-label" for="phoneNumber">Phone Number</label>
-                                        <p th:if="${#fields.hasErrors('phoneNumber')}" class="text-danger"
-                                           th:errors="*{phoneNumber}"></p>
+
 
                                     </div>
                                 </div>
@@ -121,17 +112,16 @@
 
                                     <div data-mdb-input-init class="form-outline">
                                         <input type="text" th:field="*{address}" id="address"
-                                               class="form-control form-control-lg"/>
+                                               class="form-control form-control-lg" readonly/>
                                         <label class="form-label" for="emailAddress">Address</label>
-                                        <p th:if="${#fields.hasErrors('address')}" class="text-danger"
-                                           th:errors="*{address}"></p>
+
 
                                     </div>
 
                                 </div>
-                                <div th:if="${role}=='user'" class="col-md-6 mb-4 pb-2 ">
+                                <div class="col-md-6 mb-4 pb-2 ">
 
-                                    <button class="rounded " th:onclick="'changePass(' + ${user.id} + ')'">
+                                    <button class="rounded " th:onclick="'changePass(' + ${user.id} + ')'" hidden>
                                         <span>Change password</span>
 
                                     </button>
@@ -141,19 +131,14 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-4 pb-2">
-                                    <input class="form-check-input" type="checkbox" id="isActive" th:field="*{active}"  />
+                                    <input class="form-check-input" type="checkbox" id="isActive" th:field="*{isActived}" disabled/>
                                     <label class="form-check-label" for="isActive">Active</label>
                                 </div>
                                 <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
                                     <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
-                                           type="submit" value="Submit" style="background-color: #eea738"/>
+                                           type="submit" value="Back" style="background-color: #eea738"/>
                                 </div>
                             </div>
-
-
-
-
-
                         </form>
                     </div>
                 </div>
@@ -163,13 +148,6 @@
 </section>
 </body>
 </html>
-
-<script th:inline="javascript">
-    var sameEmailError = /*[[${error}]]*/ "";
-    if (sameEmailError !== "") {
-        document.getElementById("sameEmailError").innerText = sameEmailError;
-    }
-</script>
 
 <script>
     function confirmSubmit() {

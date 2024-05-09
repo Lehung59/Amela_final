@@ -42,6 +42,8 @@ public class UserForm {
 
     private String avatar;
 
+    private boolean active;
+
     private Role role;
 
     private boolean isMale;

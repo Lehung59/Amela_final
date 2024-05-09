@@ -1,5 +1,7 @@
 package com.example.demo.entity;
 
+import com.example.demo.rule.ValidEmail;
+import com.example.demo.rule.ValidPassword;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
@@ -25,9 +27,11 @@ public class User {
     private int id;
     @Column(nullable = false, unique = true)
 //    @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
+    @ValidEmail
     @NotEmpty(message = "Email cannot be empty")
     private String email;
     @Column(nullable = false)
+    @ValidPassword
     private String password;
     @NotEmpty(message = "Firstname cannot be empty")
     @Column(name = "first_name")

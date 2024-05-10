@@ -152,6 +152,7 @@ public class UserServiceImpl implements UserService {
         userForm.setAvatar(user.getAvatar());
         userForm.setRole(user.getRole());
         userForm.setMale(user.isMale());
+        userForm.setActive(user.getIsActived());
         userForm.setBirthday(user.getBirthday());
         userForm.setCreatedAt(user.getCreatedAt());
         userForm.setUpdatedAt(user.getUpdatedAt());

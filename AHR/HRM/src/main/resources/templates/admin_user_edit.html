@@ -23,7 +23,7 @@
 <div th:replace="~{fragments/barside}" >
 
 </div>
-<section class="vh-100 gradient-custom">
+<section class="">
     <div class="container py-5 h-100">
         <div class="row justify-content-center align-items-center h-100">
             <div class="col-12 col-lg-9 col-xl-7">
@@ -141,9 +141,13 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-4 pb-2">
-                                    <input class="form-check-input" type="checkbox" id="isActive" th:field="*{active}"  />
+                                    <input class="form-check-input" type="checkbox" id="isActive"
+                                           th:field="*{active}" th:checked="*{active}"
+                                           onchange="toggleActive(this)" />
                                     <label class="form-check-label" for="isActive">Active</label>
                                 </div>
+                                <!-- Tr??ng input ?n ?? l?u giá tr? -->
+                                <input type="hidden" id="active" name="active" value="${active}" />
                                 <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
                                     <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
                                            type="submit" value="Submit" style="background-color: #eea738"/>
@@ -166,12 +170,41 @@
 
 <script th:inline="javascript">
     var sameEmailError = /*[[${error}]]*/ "";
+    var active = /*[[${userForm.active}]]*/ "";
+    var active1 = /*[[${userForm.email}]]*/ "";
     if (sameEmailError !== "") {
         document.getElementById("sameEmailError").innerText = sameEmailError;
     }
+    console.log(active)
+    console.log(active1)
+    console.log(123)
 </script>
 
 <script>
+        function toggleActive(checkbox) {
+        // Ki?m tra tr?ng thái checkbox
+        const isChecked = checkbox.checked;
+
+        // T?o thông báo d?a trên tr?ng thái
+        const message = isChecked ?
+        "B?n mu?n kích ho?t tài kho?n này?" :
+        "B?n mu?n ng?ng kích ho?t tài kho?n này?";
+
+        // Hi?n th? thông báo và ki?m tra s? ??ng ý
+        const confirmed = confirm(message);
+
+        if (!confirmed) {
+        // Hoàn tác l?i tr?ng thái checkbox n?u ng??i dùng không ??ng ý
+        checkbox.checked = !isChecked;
+        return;
+    }
+
+        // C?p nh?t giá tr? c?a input ?n 'active'
+        document.getElementById("active").value = isChecked;
+    }
+</script>
+
+
     function confirmSubmit() {
         let confirmed = confirm("Are you sure you want to submit?");
 

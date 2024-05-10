@@ -27,7 +27,7 @@ public class MailController {
     private final UserRepo userRepo;
 
     @GetMapping("/admin/mails")
-    public String listAttendance(Model model,
+    public String listMails(Model model,
                                  @RequestParam(required = false) String keyword,
                                  @RequestParam(defaultValue = "1") int page,
                                  @RequestParam(defaultValue = "3") int size){
@@ -66,7 +66,7 @@ public class MailController {
     }
 
     @GetMapping("/admin/mail/view/{id}")
-    public String viewAttendanceForm(@PathVariable int id, Model model) {
+    public String viewMailForm(@PathVariable int id, Model model) {
         model.addAttribute("SENT",MailStatus.SENT);
         model.addAttribute("FAILED",MailStatus.FAILED);
         model.addAttribute("PENDING",MailStatus.PENDING);
@@ -80,10 +80,36 @@ public class MailController {
         mailService.deleteMail(id);
         return "redirect:/admin/mails";
     }
+    @GetMapping("admin/mail/insert")
+    public String insertMail(Model model){
+        MailForm mailForm = new MailForm();
+        model.addAttribute("mailForm", mailForm);
+        model.addAttribute("mailList", userRepo.getAllEmail());
+        return "admin_mail_add";
+    }
+    @PostMapping("/admin/mail/insert")
+    public String saveMail(@Valid @ModelAttribute("mailForm") MailForm mailForm,
+                                 BindingResult bindingResult)  {
+//        List<Attendance> newObj = attendanceRepo.findByEmailAndDate(attendance.getUser().getEmail(), attendance.getDateCheck());
+//        if(!newObj.isEmpty()){
+//
+////            ObjectError error = new ObjectError("attendance", "Đã tồn tại chấm công này");
+//            bindingResult.rejectValue("dateCheck", "Đã tồn tại chấm công này");
+////            bindingResult.addError(error);
+//        }
 
+        if(bindingResult.hasErrors()){
+
+            return "redirect:/admin/mail/insert";
+        }
+
+        mailService.saveMail(mailForm);
+        return "redirect:/admin/mails";
+
+    }
 
     @GetMapping("/admin/mail/edit/{id}")
-    public String editAttendanceForm(@PathVariable int id, Model model) {
+    public String editMailForm(@PathVariable int id, Model model) {
         model.addAttribute("SENT",MailStatus.SENT);
         model.addAttribute("FAILED",MailStatus.FAILED);
         model.addAttribute("PENDING",MailStatus.PENDING);
@@ -98,20 +124,20 @@ public class MailController {
                                    @Valid @ModelAttribute("mail") MailForm mailForm,
                                    BindingResult bindingResult) {
         if(bindingResult.hasErrors()){
-            return "admin_attendance_edit";
+            return "admin_mail_edit";
         }
         // get student from database by id
         mailForm.setMailId(id);
         mailService.updateMail(mailForm);
 
-//        User exUser = userService.getUserById(id);
-//        exUser.setId(id);
-//        exUser.setFirstName(user.getFirstName());
-//        exUser.setLastName(user.getLastName());
-//        exUser.setEmail(user.getEmail());
-//        exUser.setMale();
-//        // save updated student object
-//        userRepo.save(exUser);
+        return "redirect:/admin/mails";
+    }
+    @PostMapping("/admin/mail/edit/draft")
+    public String draftMail( @Valid @ModelAttribute("mail") MailForm mailForm,
+                             @RequestParam(value = "id", required = false) int id ) {
+        if(id != 0 ) mailForm.setMailId(id);
+        mailService.draftMail(mailForm);
+
         return "redirect:/admin/mails";
     }
 

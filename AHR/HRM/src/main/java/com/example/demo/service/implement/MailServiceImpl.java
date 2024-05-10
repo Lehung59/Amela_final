@@ -1,5 +1,6 @@
 package com.example.demo.service.implement;
 
+import com.example.demo.entity.MailStatus;
 import com.example.demo.entity.User;
 import com.example.demo.form.MailForm;
 import com.example.demo.exception.MailNotFoundException;
@@ -7,14 +8,23 @@ import com.example.demo.entity.Mail;
 import com.example.demo.repository.MailRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.utils.DateUtils;
+import com.example.demo.utils.EmailMix;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.bouncycastle.asn1.iana.IANAObjectIdentifiers.mail;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +32,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
 
     private final MailRepo mailRepo;
     private final UserRepo userRepo;
+    private final ThreadPoolTaskScheduler taskScheduler;
 
     @Override
     public List<MailForm> getAllMail() {
@@ -41,9 +52,69 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
 
     @Override
     public void  saveMail(MailForm mailForm) {
+
         Mail mail = convertToMail(mailForm);
-        mailRepo.save(mail);
+        Mail newObj = new Mail();
+        newObj.setMailRecipient(mail.getMailRecipient());
+        newObj.setContent(mail.getContent());
+        newObj.setCreatedAt(DateUtils.getCurrentDay());
+        newObj.setUpdatedAt(DateUtils.getCurrentDay());
+        newObj.setDateSend(mail.getDateSend());
+        newObj.setStatus(MailStatus.PENDING);
+        newObj.setTimeSend(mail.getTimeSend());
+        newObj.setTitle(mail.getTitle());
+
+        String listMails = mailForm.getMailRecipient().replaceAll("\\s+", "");
+        List<String> emailList = Arrays.asList(listMails.split(","));
+        List<User> foundUsers = new ArrayList<>();
+        for (String email : emailList) {
+            Optional<User> userOptional = userRepo.findByEmail(email);
+            if(userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
+            userOptional.ifPresent(foundUsers::add);
+        }
+//        newObj.getUsers().addAll(foundUsers);
+        newObj.setUsers(foundUsers);
+
+
+        newObj = mailRepo.save(newObj);
+
+//        LocalDateTime dateTime = LocalDateTime.of(mail.getDateSend(),mail.getTimeSend());
+////        scheduleEmail(dateTime);
+//        String recipientAddress = mail.getMailRecipient();
+//        String subject = mail.getTitle();
+//        String message = mail.getContent();
+        int id = newObj.getMailId();
+        scheduleEmail(newObj.getMailId());
+
     }
+    public void scheduleEmail(int id) {
+//        Instant instant = DateUtils.getCurrentDay().toInstant().plusSeconds(10);
+//        Date sendDate = Date.from(instant);
+        Mail mail = mailRepo.findById(id).get();
+//        LocalDateTime dateTime = LocalDateTime.of(mail.getDateSend(),mail.getTimeSend());
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(mail.getDateSend(),mail.getTimeSend(), ZoneId.systemDefault());
+
+
+
+        String recipientAddress = mail.getMailRecipient();
+        String subject = mail.getTitle();
+        String message = mail.getContent();
+        taskScheduler.schedule(() -> sendEmail(recipientAddress,subject,message,id), zonedDateTime.toInstant());
+    }
+    public void sendEmail(String recipientAddress, String subject, String message,int id) {
+        EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
+
+        e.sendContent(recipientAddress,subject,message);
+        Mail mail = mailRepo.findById(id).get();
+        mail.setStatus(MailStatus.SENT);
+        mailRepo.save(mail);
+        // Hàm giả lập gửi email
+//        System.out.println("Sending email at " + DateUtils.getCurrentDay());
+        // Thêm logic gửi email tại đây
+    }
+
+
+
 
     @Override
     public void updateMail(MailForm mailForm) {
@@ -123,6 +194,39 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
                 .collect(Collectors.toList());
 
         return new PageImpl<>(mailFormList, pageable, mailList.getTotalElements());
+    }
+
+    @Override
+    public void draftMail(MailForm mailForm) {
+        if (mailForm.getMailId() == 0) {
+            Mail mail = new Mail();
+            if (mailForm.getMailRecipient() != null) {
+                mail.setMailRecipient(mailForm.getMailRecipient());
+            } else mail.setMailRecipient("");
+            mail.setTitle(mailForm.getTitle());
+            mail.setContent(mailForm.getContent());
+            mail.setStatus(MailStatus.DRAFT);
+            mail.setCreatedAt(DateUtils.getCurrentDay());
+            mail.setUpdatedAt(DateUtils.getCurrentDay());
+            mail.setTimeSend(mailForm.getTimeSend());
+            mail.setDateSend(mailForm.getDateSend());
+
+            mailRepo.save(mail);
+        }
+        if(mailForm.getMailId()!=0) {
+            Mail mail = mailRepo.findById(mailForm.getMailId()).get();
+            if (mailForm.getMailRecipient() != null) {
+                mail.setMailRecipient(mailForm.getMailRecipient());
+            } else mail.setMailRecipient("");
+            mail.setTitle(mailForm.getTitle());
+            mail.setContent(mailForm.getContent());
+            mail.setStatus(MailStatus.DRAFT);
+            mail.setTimeSend(mailForm.getTimeSend());
+            mail.setDateSend(mailForm.getDateSend());
+            mail.setUpdatedAt(DateUtils.getCurrentDay());
+            mailRepo.save(mail);
+
+        }
     }
 
 

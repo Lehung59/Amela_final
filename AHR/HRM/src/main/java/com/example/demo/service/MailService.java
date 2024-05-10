@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.example.demo.entity.Mail;
 import com.example.demo.form.MailForm;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,4 +18,5 @@ public interface MailService {
      Page<MailForm> findAllMailPaginable(Pageable pageable);
      Page<MailForm> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
 
+     void draftMail(MailForm mailForm);
 }

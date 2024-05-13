@@ -132,10 +132,10 @@ public class MailController {
 
         return "redirect:/admin/mails";
     }
-    @PostMapping("/admin/mail/edit/draft")
+    @PostMapping("/admin/mail/draft")
     public String draftMail( @Valid @ModelAttribute("mail") MailForm mailForm,
-                             @RequestParam(value = "id", required = false) int id ) {
-        if(id != 0 ) mailForm.setMailId(id);
+                             @RequestParam(value = "id") int id ) {
+        mailForm.setMailId(id);
         mailService.draftMail(mailForm);
 
         return "redirect:/admin/mails";

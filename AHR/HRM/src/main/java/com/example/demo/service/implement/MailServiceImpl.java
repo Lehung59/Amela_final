@@ -198,7 +198,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
 
     @Override
     public void draftMail(MailForm mailForm) {
-        if (mailForm.getMailId() == 0) {
+        if (mailForm.getMailId() == -1) {
             Mail mail = new Mail();
             if (mailForm.getMailRecipient() != null) {
                 mail.setMailRecipient(mailForm.getMailRecipient());
@@ -213,7 +213,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
 
             mailRepo.save(mail);
         }
-        if(mailForm.getMailId()!=0) {
+        if(mailForm.getMailId()!=-1) {
             Mail mail = mailRepo.findById(mailForm.getMailId()).get();
             if (mailForm.getMailRecipient() != null) {
                 mail.setMailRecipient(mailForm.getMailRecipient());

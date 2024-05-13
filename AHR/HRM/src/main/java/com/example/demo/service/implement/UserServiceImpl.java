@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -20,6 +21,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
+    PasswordEncoder passwordEncoder;
 
 
 //    @Override
@@ -69,7 +71,7 @@ public class UserServiceImpl implements UserService {
         String recipientAddress = userForm.getEmail();
         User newObj = new User();
         newObj.setEmail(user.getEmail());
-        newObj.setPassword(user.getPhoneNumber());
+        newObj.setPassword(passwordEncoder.encode(user.getPhoneNumber()));
         newObj.setLastName(user.getLastName());
         newObj.setFirstName(user.getFirstName());
         newObj.setPhoneNumber(user.getPhoneNumber());
@@ -86,7 +88,7 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepo.save(newObj);
-        String password = userRepo.findByEmail(recipientAddress).get().getPassword();
+        String password = userRepo.findByEmail(recipientAddress).get().getPhoneNumber();
         String subject = "Xác nhận tài khoản";
         String confirmationUrl
                 =   "http://localhost:8080/user/active/"+userRepo.findByEmail(recipientAddress).get().getId();
@@ -135,7 +137,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void changePassword(int id, String newPassword){
         User user = userRepo.findById(id).get();
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
 
     }

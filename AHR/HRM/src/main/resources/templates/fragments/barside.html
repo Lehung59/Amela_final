@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>User </title>
@@ -136,7 +136,7 @@
     }
     .link:hover {
         color: #fff;
-        background-color: #4070f4;
+        background-color: #eea738;
     }
     .link span {
         white-space: nowrap;
@@ -158,13 +158,14 @@
         border-top: 2px solid rgba(0, 0, 0, 0.1);
     }
     .sidebar_profile .name {
-        font-size: 18px;
-        color: #333;
-    }
-    .sidebar_profile .email {
         font-size: 15px;
         color: #333;
     }
+    .sidebar_profile .email {
+        font-size: 13px;
+        color: #333;
+    }
+
 
     /* Navbar */
     .navbar {
@@ -236,7 +237,7 @@
 <body><nav class="sidebar hoverable close">
     <div class="logo_items flex">
         <span class="nav_image">
-          <img src="../../static/images/logo.jpg" alt="logo_img" />
+          <img th:src="@{/images/logo.jpg}" alt="logo_img" />
         </span>
         <span class="logo_name">HRM</span>
         <i class="bx bx-lock-alt" id="lock-icon" title="Unlock Sidebar"></i>
@@ -338,19 +339,30 @@
         </div>
         <div class="sidebar_profile flex">
           <span class="nav_image">
-            <img src="images/profile.jpg" alt="logo_img" />
+            <img src="images/logo.jpg" alt="logo_img" />
           </span>
             <div class="data_text">
-                <span class="name">David Oliva</span>
-                <span class="email">david@gmail.com</span>
+                <span sec:authentication="principal.fullName" class="name"></span>
+                <span sec:authentication="principal.username" class="email"></span>
             </div>
+
         </div>
+        <div class="sidebar_profile" onclick="logout()">
+            <p class="link flex">
+                <i class="fa fa-sign-out"></i>
+                <span>Logout</span>
+            </p>
+        </div>
+
     </div>
 </nav>
 
 </body>
 </html>
 <script>
+    function logout() {
+        window.location.href = "/logout";
+    }
     // Selecting the sidebar and buttons
     const sidebar = document.querySelector(".sidebar");
     const sidebarOpenBtn = document.querySelector("#sidebar-open");
@@ -363,7 +375,7 @@
         // // If the sidebar is not locked
         // if (!sidebar.classList.contains("locked")) {
         //     sidebar.classList.add("hoverable");
-            sidebarLockBtn.classList.replace("bx-lock-alt", "bx-lock-open-alt");
+        sidebarLockBtn.classList.replace("bx-lock-alt", "bx-lock-open-alt");
         // } else {
         //     sidebar.classList.remove("hoverable");
         //     sidebarLockBtn.classList.replace("bx-lock-open-alt", "bx-lock-alt");
@@ -402,4 +414,6 @@
     sidebar.addEventListener("mouseenter", showSidebar);
     sidebarOpenBtn.addEventListener("click", toggleSidebar);
     sidebarCloseBtn.addEventListener("click", toggleSidebar);
+
+
 </script>

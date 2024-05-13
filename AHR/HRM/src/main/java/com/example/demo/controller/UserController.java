@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import com.example.demo.entity.Attendance;
 import com.example.demo.entity.User;
 import com.example.demo.form.ChangePasswordForm;
+import com.example.demo.form.LoginForm;
 import com.example.demo.form.UserForm;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.UserService;
@@ -156,6 +157,21 @@ public class UserController {
         userService.changePassword(id,changePasswordForm.getNewPassword());
         return "redirect:/user/edit/"+id;
     }
+    @GetMapping("/login")
+    public String login(Model model) {
+        LoginForm loginForm = new LoginForm();
+        model.addAttribute(loginForm);
+        return "login";
+    }
 
+
+//    @GetMapping("/login")
+//    public String login(Model model){
+//
+//        return "login";
+//    }
+//
+//    @PostMapping("/login")
+//    public String login()
 
 }

@@ -7,6 +7,7 @@ import com.example.demo.repository.UserRepo;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.DateUtils;
 import com.example.demo.utils.EmailMix;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,14 +15,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
-    PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
 
 //    @Override
@@ -31,6 +37,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateUser(UserForm userForm, int id) {
+
+
         User newUser = convertToUser(userForm);
         User exUser = userRepo.findById(id).get();
         exUser.setLastName(newUser.getLastName());
@@ -38,21 +46,33 @@ public class UserServiceImpl implements UserService {
         exUser.setPhoneNumber(newUser.getPhoneNumber());
         exUser.setIsActived(newUser.getIsActived());
         if(!newUser.getEmail().equals(exUser.getEmail())){
+            String activeCode = UUID.randomUUID().toString().substring(0,10).toUpperCase();
+            exUser.setActiveCode(activeCode);
+            exUser.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
+
             exUser.setEmail(newUser.getEmail());
             exUser.setIsActived(false);
             String recipientAddress = userForm.getEmail();
+
+
             String subject = "Xác nhận tài khoản";
-            String confirmationUrl
-                    =   "http://localhost:8080/user/active/"+id;
-            String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
-                    "<p>Tên tài khoản nhân viên : " + recipientAddress + ".</p>"
-                    + "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>"
-                    + "<form action='" + confirmationUrl + "' method='get'>"
-                    + "<button type='submit' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer;'>"
-                    + "Xác nhận tài khoản</button>"
-                    + "</form>";
-            EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-//            e.sendContent(recipientAddress,subject,message);
+            String urlBase = "http://localhost:8080/user/active";
+
+            try{
+                String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
+                String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
+                String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
+                String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
+                        "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
+                        "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
+                        "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>" +
+                        "<a href='" + confirmationUrl + "' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;'>Xác nhận tài khoản</a>";
+                EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
+                e.sendContent(recipientAddress,subject,message);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                // Thông báo lỗi hoặc xử lý phù hợp
+            }
         }
         exUser.setAddress(newUser.getAddress());
         exUser.setAvatar(newUser.getAvatar());
@@ -67,6 +87,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void save(UserForm userForm) {
+
+        String activeCode = UUID.randomUUID().toString().substring(0,10).toUpperCase();
+
         User user = convertToUser(userForm);
         String recipientAddress = userForm.getEmail();
         User newObj = new User();
@@ -81,6 +104,8 @@ public class UserServiceImpl implements UserService {
         newObj.setRole(Role.EMPLOYEE);
         newObj.setIsActived(false);
         newObj.setMale(false);
+        newObj.setActiveCode(activeCode);
+        newObj.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
         newObj.setCreatedAt(DateUtils.getCurrentDay());
         newObj.setUpdatedAt(DateUtils.getCurrentDay());
         if (user.isMale()) {
@@ -90,21 +115,32 @@ public class UserServiceImpl implements UserService {
         userRepo.save(newObj);
         String password = userRepo.findByEmail(recipientAddress).get().getPhoneNumber();
         String subject = "Xác nhận tài khoản";
-        String confirmationUrl
-                =   "http://localhost:8080/user/active/"+userRepo.findByEmail(recipientAddress).get().getId();
+        String urlBase = "http://localhost:8080/user/active";
+        try{
+            String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
+            String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
+            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
+
+//
+//        String confirmationUrl
+//                =   urlBase+"?email=" +recipientAddress + "&activeCode=" + activeCode;
         String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
-                "<p>Tên tài khoản nhân viên : " + recipientAddress + ".</p>"
-                + "<p>Mật khẩu của bạn: <strong>" + password + "</strong>.</p>"
-                + "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>"
-                + "<form action='" + confirmationUrl + "' method='get'>"
-                + "<button type='submit' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer;'>"
-                + "Xác nhận tài khoản</button>"
-                + "</form>";
+                "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
+                "<p>Mật khẩu của bạn: <strong>" + password + "</strong>.</p>" +
+                "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
+                "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>" +
+                "<a href='" + confirmationUrl + "' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;'>Xác nhận tài khoản</a>";
         EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-//        e.sendContent(recipientAddress,subject,message);
+        e.sendContent(recipientAddress,subject,message);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            // Thông báo lỗi hoặc xử lý phù hợp
+        }
+
     }
 
     @Override
+    @Transactional
     public void deleteUserById(int id) {
         User user = userRepo.findById(id).get();
         userRepo.delete(user);
@@ -128,6 +164,14 @@ public class UserServiceImpl implements UserService {
     public Optional<User> getUserByEmail(String email) {
         return userRepo.findByEmail(email);
     }
+
+    @Override
+    public UserForm getUserFormByEmail(String email) {
+        User user = userRepo.findByEmail(email).get();
+        return convertToUserForm(user);
+
+    }
+
     @Override
     public Optional<User> getUserByPhone(String phone) {
         return userRepo.findByPhoneNumber(phone);
@@ -140,6 +184,42 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
 
+    }
+    @Override
+    public boolean checkOnlPassword(int id,String oldPassword){
+        String userPass = userRepo.findById(id).get().getPassword();
+
+        return passwordEncoder.matches(oldPassword, userPass);
+    }
+
+    @Override
+    public void reSendCode(int id) {
+        User user = userRepo.findById(id).get();
+        String recipientAddress = user.getEmail();
+        String activeCode = user.getActiveCode();
+        user.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
+        userRepo.save(user);
+        String subject = "Xác nhận tài khoản";
+        String urlBase = "http://localhost:8080/user/active";
+        try{
+            String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
+            String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
+            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
+
+//
+//        String confirmationUrl
+//                =   urlBase+"?email=" +recipientAddress + "&activeCode=" + activeCode;
+            String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
+                    "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
+                    "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
+                    "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>" +
+                    "<a href='" + confirmationUrl + "' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;'>Xác nhận tài khoản</a>";
+            EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
+            e.sendContent(recipientAddress,subject,message);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            // Thông báo lỗi hoặc xử lý phù hợp
+        }
     }
 
     public static UserForm convertToUserForm(User user) {

@@ -17,6 +17,11 @@ public class CheckController {
     }
     @GetMapping("/check/user/phone")
     public String checkUserPhone(@RequestParam String phone){
+//        String oldPhone = userService.getUserByEmail(email).get().getPhoneNumber();
+//        if(phone.equals(oldPhone)) return "OK";
+
+
+
         return userService.getUserByPhone(phone).isEmpty()?"OK":"TRUNG";
     }
 }

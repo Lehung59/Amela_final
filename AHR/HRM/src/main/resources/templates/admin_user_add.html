@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
@@ -111,7 +111,9 @@
                     <div class="card-body p-4 p-md-5">
                         <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Registration Form</h3>
                         <form th:action="@{/admin/insert}" th:object="${user}" method="POST">
-
+                            <div th:if="${param.error}" class="col-sm-8">
+                                <p class="alert alert-danger">Invalid </p>
+                            </div>
                             <div class="row">
                                 <div class="col-md-6 mb-4">
 
@@ -167,7 +169,6 @@
                                         <label class="form-check-label" for="maleGender">Male</label>
                                     </div>
                                     <!--                    </option>-->
-                                    </select>
 
 
                                 </div>

@@ -61,7 +61,7 @@ public class Mail {
 //        SENT, FAILED, PENDING, DRAFT
 //    }
 
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "mails")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "mails", cascade = CascadeType.ALL)
     @JsonBackReference
     List<User> users;
 

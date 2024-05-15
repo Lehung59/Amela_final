@@ -43,10 +43,13 @@ public class SecurityConfiguration {
                         a -> a.requestMatchers(
 
                                         "/",
-                                        "/error",
-                                        "/login",
+                                        "/error/**",
+                                        "/login/**",
                                         "/images/**",
-                                        "/js/**"
+                                        "/js/**",
+                                        "/check/**",
+                                        "/user/active/**"
+
                                 )
                                 .permitAll()
                                 .anyRequest()

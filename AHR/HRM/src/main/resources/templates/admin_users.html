@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 
 <head>
     <meta charset="UTF-8">
@@ -19,21 +20,28 @@
 <body>
 
 <div class="container">
-    <div th:if="${successmess!=''}">Da them thanh cong</div>
+    <div th:if="${mess}" class="alert alert-success" role="alert">
+        <span th:text="${mess}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+
+
     <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
         <h1 class="mt-5 mb-5" style="color: black;">List Employees</h1>
     </div>
     <div class="d-flex justify-content-between">
 
-        <div class="">
-            <a th:href="@{/admin/insert}" class="btn btn-primary btn-sm mb-3"
+        <div  class="">
+            <a sec:authorize="hasAuthority('ADMIN')" th:href="@{/admin/insert}" class="btn btn-primary btn-sm mb-3"
                style="background-color: #dea8059c; color: black;"> Add Employee</a>
         </div>
 
         <div class="">
             <form>
-                <div class="input-group d-flex">
-                    <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control"
+                <div class="input-group d-flex mb-3">
+                    <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control "
                            placeholder="Enter keyword">
                     <button type="submit" class="btn btn-secondary"
                             style="background-color: #dea8059c; color: #333333 ">Search
@@ -50,9 +58,9 @@
                 <th scope="col">Full name</th>
                 <th scope="col">Email</th>
                 <th scope="col">Phone number</th>
-                <th scope="col">Active</th>
+                <th sec:authorize="hasAuthority('ADMIN')" scope="col">Active</th>
                 <th scope="col">Address</th>
-                <th scope="col">Actions</th>
+                <th sec:authorize="hasAuthority('ADMIN')" scope="col">Actions</th>
             </tr>
             </thead>
             <tbody>
@@ -61,9 +69,9 @@
                 <td th:text="${user.firstName} +' '+${user.lastName}"></td>
                 <td th:text="${user.email}"></td>
                 <td th:text="${user.phoneNumber}"></td>
-                <td th:text="${user.isActived}"></td>
+                <td sec:authorize="hasAuthority('ADMIN')" th:text="${user.isActived}"></td>
                 <td th:text="${user.address}"></td>
-                <td>
+                <td sec:authorize="hasAuthority('ADMIN')">
                     <button th:onclick="'viewUser(' + ${user.id} + ')'">
                         <span class="fa-solid fa-user"></span>
                     </button>
@@ -95,7 +103,7 @@
     }
 
     function editUser(userId) {
-        window.location.href = "/user/edit/" + userId;
+        window.location.href = "admin/user/edit/" + userId;
     }
     function viewUser(userId) {
         window.location.href = "/user/view/" + userId;

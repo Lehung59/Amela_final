@@ -28,9 +28,9 @@
             <div class="col-12 col-lg-9 col-xl-7">
                 <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
                     <div class="card-body p-4 p-md-5">
-                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Employee info</h3>
-                        <form th:action="@{/users}" th:object="${user}" method="GET"
-                               >
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Here is your information</h3>
+                        <form th:action="@{/users}" th:object="${userForm}" method="GET"
+                        >
                             <div class="row">
                                 <div class="col-md-6 mb-4">
 
@@ -119,25 +119,23 @@
                                     </div>
 
                                 </div>
-                                <div class="col-md-6 mb-4 pb-2 ">
 
-                                    <button class="rounded " th:onclick="'changePass(' + ${user.id} + ')'" hidden>
-                                        <span>Change password</span>
-
-                                    </button>
-
-                                </div>
 
                             </div>
                             <div class="row">
-                                <div class="col-md-6 mb-4 pb-2">
-                                    <input class="form-check-input" type="checkbox" id="isActive" th:field="*{isActived}" disabled/>
-                                    <label class="form-check-label" for="isActive">Active</label>
-                                </div>
                                 <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
-                                    <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
-                                           type="submit" value="Back" style="background-color: #eea738"/>
+                                    <a class="btn btn-primary btn-lg"
+                                       style="background-color: #eea738" th:href="@{/users}">Back</a>
                                 </div>
+
+                                <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
+
+                                    <a class="btn btn-primary btn-lg"
+                                        style="background-color: #eea738" th:href="@{/user/info/edit}" >Edit</a>
+
+                                </div>
+
+
                             </div>
                         </form>
                     </div>
@@ -150,10 +148,8 @@
 </html>
 
 <script>
-    function confirmSubmit() {
-        let confirmed = confirm("Are you sure you want to submit?");
-
-        return confirmed;
+    function redirectToEdit() {
+        window.location.href = "/user/info/edit";
     }
 
     function changePass(userId) {

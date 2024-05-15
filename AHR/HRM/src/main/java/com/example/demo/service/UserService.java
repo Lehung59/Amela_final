@@ -22,6 +22,11 @@ public interface UserService {
     Page<User> findPaginated(int pageNo, int pageSize);
 
     Optional<User> getUserByEmail(String email);
+    UserForm getUserFormByEmail(String email);
 
     Optional<User> getUserByPhone(String phone);
+
+    boolean checkOnlPassword(int id,String oldPassword);
+
+    void reSendCode(int id);
 }

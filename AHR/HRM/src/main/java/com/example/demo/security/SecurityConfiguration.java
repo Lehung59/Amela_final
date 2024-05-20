@@ -48,7 +48,12 @@ public class SecurityConfiguration {
                                         "/images/**",
                                         "/js/**",
                                         "/check/**",
-                                        "/user/active/**"
+                                        "/user/active/**",
+                                "/user/forgetpassword/**",
+                                        "/webjars/**",
+                                        "/user/resetpassword/**"
+
+
 
                                 )
                                 .permitAll()

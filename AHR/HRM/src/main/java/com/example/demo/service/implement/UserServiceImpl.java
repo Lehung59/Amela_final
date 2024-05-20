@@ -1,9 +1,13 @@
 package com.example.demo.service.implement;
 
 import com.example.demo.entity.Role;
+import com.example.demo.entity.TokenPassword;
 import com.example.demo.entity.User;
 import com.example.demo.form.UserForm;
+import com.example.demo.repository.TokenPasswordRepo;
 import com.example.demo.repository.UserRepo;
+import com.example.demo.security.CustomUserDetails;
+import com.example.demo.service.TokenPasswordService;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.DateUtils;
 import com.example.demo.utils.EmailMix;
@@ -12,15 +16,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 
 @Service
@@ -28,6 +33,7 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
+    private final TokenPasswordService tokenPasswordService;
 
 
 //    @Override
@@ -80,6 +86,7 @@ public class UserServiceImpl implements UserService {
         exUser.setUpdatedAt(DateUtils.getCurrentDay());
         exUser.setMale(newUser.isMale());
 //        exUser.setIsActived(newUser.getIsActived());
+        updateSecurityContextHolder(exUser);
 
         userRepo.save(exUser);
 
@@ -137,6 +144,11 @@ public class UserServiceImpl implements UserService {
             // Thông báo lỗi hoặc xử lý phù hợp
         }
 
+    }
+
+    @Override
+    public void saveUser(User user) {
+        userRepo.save(user);
     }
 
     @Override
@@ -222,6 +234,59 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void forgetPassword(User user, String email) {
+
+
+        String activeCode = tokenPasswordService.createToken(user).getToken();
+        String recipientAddress = user.getEmail();
+        String subject = "Xác nhận tài khoản";
+        String urlBase = "http://localhost:8080/user/active";
+        try{
+            String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
+            String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
+            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
+
+//
+//        String confirmationUrl
+//                =   urlBase+"?email=" +recipientAddress + "&activeCode=" + activeCode;
+            String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
+                    "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
+                    "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
+                    "<p>Mã kích hoạt của bạn là: <b>" + activeCode + "</b> </p>";
+            EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
+            e.sendContent(recipientAddress,subject,message);
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            // Thông báo lỗi hoặc xử lý phù hợp
+        }
+    }
+
+    @Override
+    public void saveNewPassword(int id, String newPass) {
+        User user = userRepo.findById(id).get();
+        user.setPassword(passwordEncoder.encode(newPass));
+        userRepo.save(user);
+
+    }
+
+    @Override
+    public Set<String> getAllEmail() {
+        return userRepo.getAllEmail();
+    }
+
+    @Override
+    public Page<User> getAllUserPaging(int page, int size, String keyword) {
+        Pageable paging = PageRequest.of(page - 1, size);
+        Page<User> pageTuts = userRepo.findAll(paging);
+        if (keyword == null) {
+            pageTuts = userRepo.findAll(paging);
+        } else {
+            pageTuts = userRepo.findByTitleContainingIgnoreCase(keyword, paging);
+        }
+        return pageTuts;
+    }
+
     public static UserForm convertToUserForm(User user) {
         UserForm userForm = new UserForm();
         userForm.setId(user.getId());
@@ -261,6 +326,17 @@ public class UserServiceImpl implements UserService {
         user.setUpdatedAt(userForm.getUpdatedAt());
         user.setAttendances(userForm.getAttendances()); // Nếu cần tất cả thông tin về Attendance
         return user;
+    }
+
+    public void updateSecurityContextHolder(User newUser){
+        CustomUserDetails customUserDetails = new CustomUserDetails(newUser);
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                customUserDetails,
+                customUserDetails.getPassword(),
+                customUserDetails.getAuthorities()
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
     }
 
 

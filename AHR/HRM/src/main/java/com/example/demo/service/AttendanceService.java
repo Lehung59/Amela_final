@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface AttendanceService {
@@ -15,6 +16,12 @@ public interface AttendanceService {
     void saveAttendance(Attendance attendance);
     void updateAttendance(AttendanceForm attendanceForm);
     void deleteAttendance(int id);
+
+    Attendance setCheckIn(int id);
+
+    Page<Attendance> getAllAttendancePaginable(int page, int size, String keyword);
+
+    List<Attendance> findByEmailAndDate(String email, LocalDate dateCheck);
 //    List<Attendance> searchAttendance(String keyword);
 //    Page<Attendance> searchAttendance(String keyword, int pageNo, int pageSize);
 

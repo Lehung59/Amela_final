@@ -169,27 +169,27 @@
 <script>
     var currentNumber = "[[${userForm.phoneNumber}]]"
 
-    function toggleActive(checkbox) {
-        // Ki?m tra tr?ng thái checkbox
-        const isChecked = checkbox.checked;
-
-        // T?o thông báo d?a trên tr?ng thái
-        const message = isChecked ?
-            "B?n mu?n kích ho?t tài kho?n này?" :
-            "B?n mu?n ng?ng kích ho?t tài kho?n này?";
-
-        // Hi?n th? thông báo và ki?m tra s? ??ng ý
-        const confirmed = confirm(message);
-
-        if (!confirmed) {
-            // Hoàn tác l?i tr?ng thái checkbox n?u ng??i dùng không ??ng ý
-            checkbox.checked = !isChecked;
-            return;
-        }
-
-        // C?p nh?t giá tr? c?a input ?n 'active'
-        document.getElementById("active").value = isChecked;
-    }
+    // function toggleActive(checkbox) {
+    //     // Ki?m tra tr?ng thái checkbox
+    //     const isChecked = checkbox.checked;
+    //
+    //     // T?o thông báo d?a trên tr?ng thái
+    //     const message = isChecked ?
+    //         "B?n mu?n kích ho?t tài kho?n này?" :
+    //         "B?n mu?n ng?ng kích ho?t tài kho?n này?";
+    //
+    //     // Hi?n th? thông báo và ki?m tra s? ??ng ý
+    //     const confirmed = confirm(message);
+    //
+    //     if (!confirmed) {
+    //         // Hoàn tác l?i tr?ng thái checkbox n?u ng??i dùng không ??ng ý
+    //         checkbox.checked = !isChecked;
+    //         return;
+    //     }
+    //
+    //     // C?p nh?t giá tr? c?a input ?n 'active'
+    //     document.getElementById("active").value = isChecked;
+    // }
 </script>
 
 <script>

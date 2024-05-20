@@ -245,13 +245,13 @@
     </div>
     <div class="menu_container">
         <div class="menu_items">
-            <ul class="menu_item">
+            <ul sec:authorize="hasAuthority('EMPLOYEE')"  class="menu_item">
                 <div class="menu_title flex">
                     <span class="fa-solid fa-house"></span>
                     <span class="title">HomePage</span>
                 </div>
                 <li class="item">
-                    <a href="#" class="link flex">
+                    <a th:href="@{/user/attendanceCheck}" class="link flex">
                         <i class="bx bx-home-alt"></i>
                         <span>HomePage</span>
                     </a>
@@ -274,20 +274,8 @@
                         <span>Danh sách nhân viên</span>
                     </a>
                 </li>
-                <!--                <li class="item">-->
-                <!--                    <a href="#" class="link flex">-->
-                <!--                        <i class="bx bx-award"></i>-->
-                <!--                        <span>Award</span>-->
-                <!--                    </a>-->
-                <!--                </li>-->
-                <!--                <li class="item">-->
-                <!--                    <a href="#" class="link flex">-->
-                <!--                        <i class="bx bx-cog"></i>-->
-                <!--                        <span>Setting</span>-->
-                <!--                    </a>-->
-                <!--                </li>-->
             </ul>
-            <ul class="menu_item">
+            <ul sec:authorize="hasAuthority('ADMIN')" class="menu_item">
 
                 <div class="menu_title flex">
                     <span class="fa-solid fa-clipboard-user"></span>
@@ -299,20 +287,21 @@
                         <span>Danh sách chấm công</span>
                     </a>
                 </li>
-<!--                <li class="item">-->
-<!--                    <a href="#" class="link flex">-->
-<!--                        <i class="bx bx-folder"></i>-->
-<!--                        <span>New Projects</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="item">-->
-<!--                    <a href="#" class="link flex">-->
-<!--                        <i class="bx bx-cloud-upload"></i>-->
-<!--                        <span>Upload New</span>-->
-<!--                    </a>-->
-<!--                </li>-->
             </ul>
-            <ul class="menu_item">
+            <ul sec:authorize="hasAuthority('EMPLOYEE')" class="menu_item">
+
+                <div class="menu_title flex">
+                    <span class="fa-solid fa-clipboard-user"></span>
+                    <span class="title d-lg-inline">Chấm công</span>
+                </div>
+                <li class="item">
+                    <a th:href="@{/user/attendances}" class="link flex">
+                        <i class="bx bxs-magic-wand"></i>
+                        <span>Danh sách chấm công</span>
+                    </a>
+                </li>
+            </ul>
+            <ul sec:authorize="hasAuthority('ADMIN')" class="menu_item">
                 <div class="menu_title flex">
                     <span class="fa-solid fa-envelope"></span>
                     <span class="title">Mail</span>
@@ -323,18 +312,6 @@
                         <span>Soạn mail</span>
                     </a>
                 </li>
-<!--                <li class="item">-->
-<!--                    <a href="#" class="link flex">-->
-<!--                        <i class="bx bx-award"></i>-->
-<!--                        <span>Award</span>-->
-<!--                    </a>-->
-<!--                </li>-->
-<!--                <li class="item">-->
-<!--                    <a href="#" class="link flex">-->
-<!--                        <i class="bx bx-cog"></i>-->
-<!--                        <span>Setting</span>-->
-<!--                    </a>-->
-<!--                </li>-->
             </ul>
         </div>
         <div sec:authorize="hasAuthority('EMPLOYEE')" class="sidebar_profile flex" onclick="redirectToEditPage()">          <span class="nav_image">

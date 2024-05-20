@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,15 +49,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     {
         LocalDate checkDate = attendance.getDateCheck();
         String email = attendance.getUser().getEmail();
-//        if(userRepo.findByEmail(email).isEmpty()){
-//            throw new MailNotFoundException("Not found email: " + email);
-//        }
-//        if(attendanceRepo.findByEmailAndDate(email,checkDate).isPresent() ){
-//            throw new AttendanceExistException("Exist this attendance. Please edit it");
-//        }
         User user = userRepo.findByEmail(email).get();
-
-
         Attendance newObj = new Attendance();
         if (attendance.isAllowed()) {
             newObj.setAllowed(true);
@@ -120,6 +113,53 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         }
         attendanceRepo.deleteById(id);
+    }
+
+    @Override
+    public Attendance setCheckIn(int id) {
+        LocalDate date = LocalDate.now();
+        LocalTime time = LocalTime.now();
+        User user = userRepo.findById(id).get();
+
+        Optional<Attendance> attendance = attendanceRepo.findByDateAndUserId(date,id);
+        if(attendance.isEmpty()) {
+            Attendance newObj = Attendance.builder()
+                    .dateCheck(date)
+                    .timeCheckIn(time)
+                    .timeCheckOut(null)
+                    .allowed(false)
+                    .status(time.isAfter(LocalTime.of(8, 0, 0)) ? Attendance.AttendanceStatus.LATE :Attendance.AttendanceStatus.ONTIME)
+                    .user(user)
+                    .note(null)
+                    .build();
+            return attendanceRepo.save(newObj);
+        }else if (attendance.get().getTimeCheckIn() == null){
+            attendance.get().setTimeCheckIn(time);
+            return attendanceRepo.save(attendance.get());
+        }
+        return attendanceRepo.save(attendance.get());
+
+    }
+
+    @Override
+    public Page<Attendance> getAllAttendancePaginable(int page, int size, String keyword) {
+        List<Attendance> attendances = new ArrayList<Attendance>();
+
+        Pageable paging = PageRequest.of(page - 1, size);
+
+        Page<Attendance> pageTuts;
+        if (keyword == null) {
+            pageTuts = attendanceRepo.findAll(paging);
+        } else {
+            pageTuts = attendanceRepo.findByTitleContainingIgnoreCase(keyword, paging);
+
+        }
+        return pageTuts;
+    }
+
+    @Override
+    public List<Attendance> findByEmailAndDate(String email, LocalDate dateCheck) {
+        return attendanceRepo.findByEmailAndDate(email,dateCheck);
     }
 
 //    @Override

@@ -4,19 +4,25 @@ import com.example.demo.exception.AttendanceExistException;
 import com.example.demo.form.AttendanceForm;
 import com.example.demo.entity.Attendance;
 import com.example.demo.repository.AttendanceRepo;
+import com.example.demo.repository.UserRepo;
+import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.AttendanceService;
+import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,32 +31,22 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class AttendanceController {
     private final AttendanceService attendanceService;
-    private final AttendanceRepo attendanceRepo;
-    private AttendanceExistException attendanceExistException;
-
+    private final UserService userService;
 
 
     @GetMapping("/admin/attendances")
     public String listAttendance(Model model,
                                  @RequestParam(required = false) String keyword,
                                  @RequestParam(defaultValue = "1") int page,
-                                 @RequestParam(defaultValue = "3") int size){
+                                 @RequestParam(defaultValue = "3") int size) {
 
         try {
-            List<Attendance> attendances = new ArrayList<Attendance>();
-            Pageable paging = PageRequest.of(page - 1, size);
 
-            Page<Attendance> pageTuts;
-            if (keyword == null) {
-                pageTuts = attendanceRepo.findAll(paging);
-            } else {
-                pageTuts = attendanceRepo.findByTitleContainingIgnoreCase(keyword, paging);
+            Page<Attendance> pageTuts = attendanceService.getAllAttendancePaginable(page, size, keyword);
+
+            if (keyword != null)
                 model.addAttribute("keyword", keyword);
-            }
-
-            attendances = pageTuts.getContent();
-
-            model.addAttribute("attendances", attendances);
+            model.addAttribute("attendances", pageTuts.getContent());
             model.addAttribute("currentPage", pageTuts.getNumber() + 1);
             model.addAttribute("totalItems", pageTuts.getTotalElements());
             model.addAttribute("totalPages", pageTuts.getTotalPages());
@@ -64,28 +60,27 @@ public class AttendanceController {
     }
 
     @GetMapping("/admin/attendance/insert")
-    public String addAttendance(Model model ){
+    public String addAttendance(Model model) {
         Attendance attendance = new Attendance();
         model.addAttribute("attendance", attendance);
-        model.addAttribute("LATE",Attendance.AttendanceStatus.LATE);
-        model.addAttribute("MISS",Attendance.AttendanceStatus.MISS);
-        model.addAttribute("ONTIME",Attendance.AttendanceStatus.ONTIME);
-
+        model.addAttribute("LATE", Attendance.AttendanceStatus.LATE);
+        model.addAttribute("MISS", Attendance.AttendanceStatus.MISS);
+        model.addAttribute("ONTIME", Attendance.AttendanceStatus.ONTIME);
         return "admin_attendance_add";
 
     }
-    @PostMapping("/admin/attendance/insert")
-    public String saveAttendance(@Valid @ModelAttribute("attendance")Attendance attendance,
-                               BindingResult bindingResult)  {
-        List<Attendance> newObj = attendanceRepo.findByEmailAndDate(attendance.getUser().getEmail(), attendance.getDateCheck());
-        if(!newObj.isEmpty()){
 
-//            ObjectError error = new ObjectError("attendance", "Đã tồn tại chấm công này");
+    @PostMapping("/admin/attendance/insert")
+    public String saveAttendance(@Valid @ModelAttribute("attendance") Attendance attendance,
+                                 BindingResult bindingResult) {
+
+
+        List<Attendance> newObj = attendanceService.findByEmailAndDate(attendance.getUser().getEmail(), attendance.getDateCheck());
+        if (!newObj.isEmpty()) {
             bindingResult.rejectValue("dateCheck", "Đã tồn tại chấm công này");
-//            bindingResult.addError(error);
         }
 
-        if(bindingResult.hasErrors()){
+        if (bindingResult.hasErrors()) {
 
             return "admin_attendance_add";
         }
@@ -94,6 +89,7 @@ public class AttendanceController {
         return "redirect:/admin/attendances";
 
     }
+
     @GetMapping("/admin/attendance/delete/{id}")
     public String deleteAttendance(@PathVariable int id) {
         attendanceService.deleteAttendance(id);
@@ -111,31 +107,37 @@ public class AttendanceController {
 
     @GetMapping("/admin/attendance/edit/{id}")
     public String editAttendanceForm(@PathVariable int id, Model model) {
-        model.addAttribute("LATE",Attendance.AttendanceStatus.LATE);
-        model.addAttribute("MISS",Attendance.AttendanceStatus.MISS);
-        model.addAttribute("ONTIME",Attendance.AttendanceStatus.ONTIME);
+        model.addAttribute("LATE", Attendance.AttendanceStatus.LATE);
+        model.addAttribute("MISS", Attendance.AttendanceStatus.MISS);
+        model.addAttribute("ONTIME", Attendance.AttendanceStatus.ONTIME);
         model.addAttribute("attendance", attendanceService.getAttendanceById(id));
         return "admin_attendance_edit";
     }
+
     @PostMapping("/admin/attendance/edit/{id}")
     public String updateAttendance(@PathVariable int id,
-                             @Valid @ModelAttribute("attendance") AttendanceForm attendanceForm,
-                             BindingResult bindingResult) {
-        if(bindingResult.hasErrors()){
+                                   @Valid @ModelAttribute("attendance") AttendanceForm attendanceForm,
+                                   BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             return "admin_attendance_edit";
         }
-        // get student from database by id
         attendanceForm.setId(id);
         attendanceService.updateAttendance(attendanceForm);
-
-//        User exUser = userService.getUserById(id);
-//        exUser.setId(id);
-//        exUser.setFirstName(user.getFirstName());
-//        exUser.setLastName(user.getLastName());
-//        exUser.setEmail(user.getEmail());
-//        exUser.setMale();
-//        // save updated student object
-//        userRepo.save(exUser);
         return "redirect:/admin/attendances";
+    }
+
+    @GetMapping("/user/attendanceCheck")
+    public String attendanceCheck(Model model) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomUserDetails customUserDetails = (CustomUserDetails) auth.getPrincipal();
+        String email = customUserDetails.getUsername();
+        int id = userService.getUserByEmail(email).get().getId();
+        Attendance attendance = attendanceService.setCheckIn(id);
+        LocalTime timeCheckIn = attendance.getTimeCheckIn();
+        model.addAttribute("id", id);
+        model.addAttribute("timeCheckIn", timeCheckIn);
+        return "user_attendance_check";
+
+
     }
 }

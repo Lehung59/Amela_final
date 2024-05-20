@@ -2,10 +2,8 @@ package com.example.demo.controller;
 
 import com.example.demo.entity.MailStatus;
 import com.example.demo.form.MailForm;
-import com.example.demo.entity.Mail;
-import com.example.demo.repository.MailRepo;
-import com.example.demo.repository.UserRepo;
 import com.example.demo.service.MailService;
+import com.example.demo.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,8 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MailController {
     private final MailService mailService;
-    private final MailRepo mailRepo;
-    private final UserRepo userRepo;
+    private final UserService userService;
 
     @GetMapping("/admin/mails")
     public String listMails(Model model,
@@ -38,10 +35,8 @@ public class MailController {
 
             Page<MailForm> pageTuts;
             if (keyword == null) {
-//                pageTuts = mailRepo.findAll(paging);
                 pageTuts = mailService.findAllMailPaginable(paging);
             } else {
-//                pageTuts = mailRepo.findByTitleContainingIgnoreCase(keyword, paging);
                 pageTuts = mailService.findByTitleContainingIgnoreCase(keyword, paging);
                 model.addAttribute("keyword", keyword);
             }
@@ -84,7 +79,7 @@ public class MailController {
     public String insertMail(Model model){
         MailForm mailForm = new MailForm();
         model.addAttribute("mailForm", mailForm);
-        model.addAttribute("mailList", userRepo.getAllEmail());
+        model.addAttribute("mailList", userService.getAllEmail());
         return "admin_mail_add";
     }
     @PostMapping("/admin/mail/insert")
@@ -115,7 +110,7 @@ public class MailController {
         model.addAttribute("PENDING",MailStatus.PENDING);
         model.addAttribute("DRAFT",MailStatus.DRAFT);
         model.addAttribute("mail", mailService.getMailById(id));
-        model.addAttribute("mailList", userRepo.getAllEmail());
+        model.addAttribute("mailList", userService.getAllEmail());
 
         return "admin_mail_edit";
     }
@@ -126,7 +121,6 @@ public class MailController {
         if(bindingResult.hasErrors()){
             return "admin_mail_edit";
         }
-        // get student from database by id
         mailForm.setMailId(id);
         mailService.updateMail(mailForm);
 

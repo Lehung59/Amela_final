@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.constant.Constants;
 import com.example.demo.entity.MailStatus;
 import com.example.demo.form.MailForm;
 import com.example.demo.service.MailService;
@@ -26,8 +27,8 @@ public class MailController {
     @GetMapping("/admin/mails")
     public String listMails(Model model,
                                  @RequestParam(required = false) String keyword,
-                                 @RequestParam(defaultValue = "1") int page,
-                                 @RequestParam(defaultValue = "3") int size){
+                                 @RequestParam(defaultValue = Constants.PAGE) int page,
+                                 @RequestParam(defaultValue = Constants.SIZE) int size){
 
         try {
             List<MailForm> mails = new ArrayList<MailForm>();

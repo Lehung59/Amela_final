@@ -46,11 +46,6 @@ public class Attendance {
     public enum AttendanceStatus {
         LATE,  MISS, ONTIME
     }
-//
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JsonBackReference
-//    @JoinColumn(name = "userid",referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_attendance_user"))
-//    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid", referencedColumnName = "id", foreignKey = @ForeignKey(name = "fk_attendance_user"))

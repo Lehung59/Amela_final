@@ -119,14 +119,7 @@
                                     </div>
 
                                 </div>
-                                <div class="col-md-6 mb-4 pb-2 ">
 
-                                    <button class="rounded " th:onclick="'changePass(' + ${user.id} + ')'" hidden>
-                                        <span>Change password</span>
-
-                                    </button>
-
-                                </div>
 
                             </div>
                             <div class="row">
@@ -156,8 +149,6 @@
         return confirmed;
     }
 
-    function changePass(userId) {
-        window.location.href = "/user/edit/password/" + userId;
-    }
+
 
 </script>

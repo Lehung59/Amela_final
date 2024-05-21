@@ -63,11 +63,6 @@ public class User {
     @Column(name = "is_actived")
     private Boolean isActived;
 
-    @Column(name = "active_code")
-    private String activeCode;
-
-    @Column(name = "code_expried")
-    private Date codeExpried;
 
     @Column(name = "is_male")
     private boolean isMale;
@@ -84,18 +79,6 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date updatedAt;
 
-//
-//    @OneToMany(mappedBy = "user", orphanRemoval = true)
-//    @JsonManagedReference
-//    private List<Attendance> attendances;
-////
-//    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinTable(name = "users_mails",
-//    joinColumns = @JoinColumn(name = "user_id",referencedColumnName = "id"),
-//    inverseJoinColumns = @JoinColumn(name = "mail_id",referencedColumnName = "mailid"))
-//    @JsonManagedReference
-//    @OnDelete(action = OnDeleteAction.CASCADE)
-//    private List<Mail> mails;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -104,7 +87,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
-    private Set<TokenPassword> tokenPasswords;
+    private Set<Token> tokens;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(

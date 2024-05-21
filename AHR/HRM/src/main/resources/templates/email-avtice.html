@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Xác nhận tài khoản</title>
+    </head>
+
+    <body>
+        <div style="width: 600px; font-family: 'Lexend', sans-serif; padding: 20px 40px; border-radius: 5px; border: 1px solid #ccc; background-color: #000; color: #fff;">
+            <h3 style="margin-left: 20px; text-align: center; background: #eea738; -webkit-background-clip: text; background-clip: text; color: transparent;">
+                Tài khoản được khởi tạo từ Admin LeHung
+            </h3>
+            <p style="font-size: 14px;">Tên tài khoản nhân viên: {name}.</p>
+            <p style="font-size: 14px;">Mã kích hoạt có hiệu lực trong 15 phút.</p>
+            <p style="font-size: 14px;">Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>
+            <div style="text-align: center; margin: 30px;">
+                <a href="{activation_link}"
+                   style="padding: 15px 25px; background: #eea738; border: none; border-radius: 5px; color: #fff; font-size: 16px; text-decoration: none; display: inline-block;">Xác
+                    nhận tài khoản</a>
+            </div>
+
+        </div>
+    </body>
+</html>

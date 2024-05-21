@@ -9,6 +9,7 @@ import com.example.demo.repository.MailRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.utils.DateUtils;
 import com.example.demo.utils.EmailMix;
+import com.example.demo.utils.MailUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,6 +34,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     private final MailRepo mailRepo;
     private final UserRepo userRepo;
     private final ThreadPoolTaskScheduler taskScheduler;
+    private final MailUtils mailUtils;
 
     @Override
     public List<MailForm> getAllMail() {
@@ -102,9 +104,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         taskScheduler.schedule(() -> sendEmail(recipientAddress,subject,message,id), zonedDateTime.toInstant());
     }
     public void sendEmail(String recipientAddress, String subject, String message,int id) {
-        EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-
-        e.sendContent(recipientAddress,subject,message);
+        mailUtils.sendContent(recipientAddress,subject,message);
         Mail mail = mailRepo.findById(id).get();
         mail.setStatus(MailStatus.SENT);
         mailRepo.save(mail);

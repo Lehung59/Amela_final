@@ -1,18 +1,22 @@
 package com.example.demo.service.implement;
 
 import com.example.demo.entity.Role;
-import com.example.demo.entity.TokenPassword;
+import com.example.demo.entity.Token;
 import com.example.demo.entity.User;
 import com.example.demo.form.UserForm;
-import com.example.demo.repository.TokenPasswordRepo;
+import com.example.demo.repository.TokenRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.security.CustomUserDetails;
-import com.example.demo.service.TokenPasswordService;
+import com.example.demo.service.TokenService;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.DateUtils;
 import com.example.demo.utils.EmailMix;
+import com.example.demo.utils.MailUtils;
+import com.example.demo.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +26,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import org.springframework.util.StreamUtils;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +43,12 @@ import java.util.*;
 public class UserServiceImpl implements UserService {
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
-    private final TokenPasswordService tokenPasswordService;
+    private final TokenService tokenService;
+    private final TokenRepo tokenRepo;
+    private final UserUtils userUtils;
+    private final TemplateEngine templateEngine;
+    private final ResourceLoader resourceLoader;
+    private final MailUtils mailUtils;
 
 
 //    @Override
@@ -47,47 +62,42 @@ public class UserServiceImpl implements UserService {
 
         User newUser = convertToUser(userForm);
         User exUser = userRepo.findById(id).get();
+
+        boolean changeMail = !newUser.getEmail().equals(exUser.getEmail());
         exUser.setLastName(newUser.getLastName());
         exUser.setFirstName(newUser.getFirstName());
         exUser.setPhoneNumber(newUser.getPhoneNumber());
         exUser.setIsActived(newUser.getIsActived());
-        if(!newUser.getEmail().equals(exUser.getEmail())){
-            String activeCode = UUID.randomUUID().toString().substring(0,10).toUpperCase();
-            exUser.setActiveCode(activeCode);
-            exUser.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
-
-            exUser.setEmail(newUser.getEmail());
-            exUser.setIsActived(false);
-            String recipientAddress = userForm.getEmail();
-
-
-            String subject = "Xác nhận tài khoản";
-            String urlBase = "http://localhost:8080/user/active";
-
-            try{
-                String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
-                String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
-                String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
-                String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
-                        "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
-                        "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
-                        "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>" +
-                        "<a href='" + confirmationUrl + "' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;'>Xác nhận tài khoản</a>";
-                EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-                e.sendContent(recipientAddress,subject,message);
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-                // Thông báo lỗi hoặc xử lý phù hợp
-            }
-        }
         exUser.setAddress(newUser.getAddress());
         exUser.setAvatar(newUser.getAvatar());
         exUser.setBirthday(newUser.getBirthday());
         exUser.setUpdatedAt(DateUtils.getCurrentDay());
         exUser.setMale(newUser.isMale());
-//        exUser.setIsActived(newUser.getIsActived());
-        updateSecurityContextHolder(exUser);
+        exUser.setEmail(newUser.getEmail());
+        exUser = userRepo.save(exUser);
+        if (changeMail) {
+            Token token = tokenService.createToken(exUser, Token.TokenType.ACTIVE);
+            exUser.setIsActived(false);
+            tokenRepo.save(token);
 
+            String recipientAddress = userForm.getEmail();
+            String subject = "Xác nhận tài khoản";
+            String urlBase = "http://localhost:8080/user/active";
+
+            try{
+                String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
+                String encodedActiveCode = URLEncoder.encode(token.getToken(), StandardCharsets.UTF_8.toString());
+                String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeToken=" + encodedActiveCode;
+                String content = mailUtils.loadActivationEmailTemplate(recipientAddress,confirmationUrl,"email-active");
+                mailUtils.sendContent(recipientAddress,subject,content);
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+                // Thông báo lỗi hoặc xử lý phù hợp
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        updateSecurityContextHolder(exUser);
         userRepo.save(exUser);
 
     }
@@ -95,7 +105,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void save(UserForm userForm) {
 
-        String activeCode = UUID.randomUUID().toString().substring(0,10).toUpperCase();
+//        String activeCode = UUID.randomUUID().toString().substring(0,10).toUpperCase();
 
         User user = convertToUser(userForm);
         String recipientAddress = userForm.getEmail();
@@ -111,37 +121,31 @@ public class UserServiceImpl implements UserService {
         newObj.setRole(Role.EMPLOYEE);
         newObj.setIsActived(false);
         newObj.setMale(false);
-        newObj.setActiveCode(activeCode);
-        newObj.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
+//        newObj.setActiveCode(activeCode);
+//        newObj.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
         newObj.setCreatedAt(DateUtils.getCurrentDay());
         newObj.setUpdatedAt(DateUtils.getCurrentDay());
         if (user.isMale()) {
             newObj.setMale(true);
         }
 
-        userRepo.save(newObj);
+        User newU = userRepo.save(newObj);
+        Token activeToken = tokenService.createToken(newU, Token.TokenType.ACTIVE);
+
         String password = userRepo.findByEmail(recipientAddress).get().getPhoneNumber();
         String subject = "Xác nhận tài khoản";
         String urlBase = "http://localhost:8080/user/active";
         try{
             String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
-            String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
-            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
+            String encodedActiveCode = URLEncoder.encode(activeToken.getToken(), StandardCharsets.UTF_8.toString());
+            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeToken=" + encodedActiveCode;
 
-//
-//        String confirmationUrl
-//                =   urlBase+"?email=" +recipientAddress + "&activeCode=" + activeCode;
-        String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
-                "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
-                "<p>Mật khẩu của bạn: <strong>" + password + "</strong>.</p>" +
-                "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
-                "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>" +
-                "<a href='" + confirmationUrl + "' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;'>Xác nhận tài khoản</a>";
-        EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-        e.sendContent(recipientAddress,subject,message);
+          String content = mailUtils.loadActivationEmailTemplate(recipientAddress,confirmationUrl,"email-newuser",password);
+          mailUtils.sendContent(recipientAddress,subject,content);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
-            // Thông báo lỗi hoặc xử lý phù hợp
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -191,14 +195,18 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public void changePassword(int id, String newPassword){
+    public void changePassword(int id, String newPassword) throws Exception {
         User user = userRepo.findById(id).get();
+        if(!user.getEmail().equals(userUtils.getUserName())){
+            throw new Exception("Ban khong duoc thay doi thong tin nay");
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepo.save(user);
 
     }
     @Override
-    public boolean checkOnlPassword(int id,String oldPassword){
+    public boolean checkOldPassword(int id,String oldPassword){
         String userPass = userRepo.findById(id).get().getPassword();
 
         return passwordEncoder.matches(oldPassword, userPass);
@@ -207,30 +215,23 @@ public class UserServiceImpl implements UserService {
     @Override
     public void reSendCode(int id) {
         User user = userRepo.findById(id).get();
+        Token activeToken = tokenService.createToken(user, Token.TokenType.ACTIVE);
+
         String recipientAddress = user.getEmail();
-        String activeCode = user.getActiveCode();
-        user.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
+//        String activeCode = user.getActiveCode();
+//        user.setCodeExpried(new Date(DateUtils.getCurrentDay().getTime() + 900000));
         userRepo.save(user);
         String subject = "Xác nhận tài khoản";
         String urlBase = "http://localhost:8080/user/active";
         try{
             String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
-            String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
-            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
+            String encodedActiveCode = URLEncoder.encode(activeToken.getToken(), StandardCharsets.UTF_8.toString());
+            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeToken=" + encodedActiveCode;
 
-//
-//        String confirmationUrl
-//                =   urlBase+"?email=" +recipientAddress + "&activeCode=" + activeCode;
-            String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
-                    "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
-                    "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
-                    "<p>Nhấp vào nút sau để xác nhận đăng ký tài khoản:</p>" +
-                    "<a href='" + confirmationUrl + "' style='padding: 10px 20px; font-size: 16px; color: white; background-color: #333333; border: none; border-radius: 5px; cursor: pointer; text-decoration: none;'>Xác nhận tài khoản</a>";
-            EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-            e.sendContent(recipientAddress,subject,message);
-        } catch (UnsupportedEncodingException e) {
+            String content = mailUtils.loadActivationEmailTemplate(recipientAddress,confirmationUrl,"email-avtice" );
+            mailUtils.sendContent(recipientAddress,subject,content);
+        } catch (IOException e) {
             e.printStackTrace();
-            // Thông báo lỗi hoặc xử lý phù hợp
         }
     }
 
@@ -238,27 +239,14 @@ public class UserServiceImpl implements UserService {
     public void forgetPassword(User user, String email) {
 
 
-        String activeCode = tokenPasswordService.createToken(user).getToken();
+        String activeCode = tokenService.createToken(user, Token.TokenType.PASSWORD).getToken();
         String recipientAddress = user.getEmail();
         String subject = "Xác nhận tài khoản";
-        String urlBase = "http://localhost:8080/user/active";
         try{
-            String encodedEmail = URLEncoder.encode(recipientAddress, StandardCharsets.UTF_8.toString());
-            String encodedActiveCode = URLEncoder.encode(activeCode, StandardCharsets.UTF_8.toString());
-            String confirmationUrl = urlBase + "?email=" + encodedEmail + "&activeCode=" + encodedActiveCode;
-
-//
-//        String confirmationUrl
-//                =   urlBase+"?email=" +recipientAddress + "&activeCode=" + activeCode;
-            String message = "<p>Tài khoản được khởi tạo từ Admin LeHung.</p>" +
-                    "<p>Tên tài khoản nhân viên: " + recipientAddress + ".</p>" +
-                    "<p>Mã kích hoạt có hiệu lực trong 15 phút.</p>" +
-                    "<p>Mã kích hoạt của bạn là: <b>" + activeCode + "</b> </p>";
-            EmailMix e = new EmailMix("nguyenlehungsc1@gmail.com", "xcsslxxwycaillbg",0);
-            e.sendContent(recipientAddress,subject,message);
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-            // Thông báo lỗi hoặc xử lý phù hợp
+            String content = mailUtils.loadActivationEmailTemplate(recipientAddress,activeCode,"email-forgetpassword");
+            mailUtils.sendContent(recipientAddress,subject,content);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -285,6 +273,30 @@ public class UserServiceImpl implements UserService {
             pageTuts = userRepo.findByTitleContainingIgnoreCase(keyword, paging);
         }
         return pageTuts;
+    }
+
+    @Override
+    public String checkActiveToken(User user, String activeToken) {
+        Optional<Token> token = tokenRepo.findByToken(activeToken, Token.TokenType.ACTIVE);
+        if (token.isPresent()) {
+            Token t = token.get();
+            if(!t.getUser().getEmail().equals(user.getEmail())) return "errors=email";
+
+            if(t.isRevoked()) return "errors=revoked";
+
+            if(t.getTokenExpried().before(DateUtils.getCurrentDay())) return "errors=time";
+
+            t.setRevoked(true);
+            tokenRepo.save(t);
+            //tai khoan da duoc kich hoat san
+            if(t.getUser().getIsActived()) return "verified";
+
+            User u = t.getUser();
+            u.setIsActived(true);
+            userRepo.save(u);
+            return "valid";
+        }
+        return "errors=invalid";
     }
 
     public static UserForm convertToUserForm(User user) {

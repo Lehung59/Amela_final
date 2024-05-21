@@ -21,7 +21,7 @@ public interface UserService {
     User getUserById(int id);
 
     void updateUser(UserForm userForm,int id);
-    void changePassword(int id, String newPassword);
+    void changePassword(int id, String newPassword) throws Exception;
 
     Page<User> findPaginated(int pageNo, int pageSize);
 
@@ -30,7 +30,7 @@ public interface UserService {
 
     Optional<User> getUserByPhone(String phone);
 
-    boolean checkOnlPassword(int id,String oldPassword);
+    boolean checkOldPassword(int id,String oldPassword);
 
     void reSendCode(int id);
 
@@ -41,4 +41,6 @@ public interface UserService {
     Set<String> getAllEmail();
 
     Page<User> getAllUserPaging(int page, int size, String keyword);
+
+    String checkActiveToken(User user, String activeToken);
 }

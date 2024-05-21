@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import com.example.demo.constant.Constants;
 import com.example.demo.exception.AttendanceExistException;
 import com.example.demo.form.AttendanceForm;
 import com.example.demo.entity.Attendance;
@@ -8,14 +9,10 @@ import com.example.demo.repository.UserRepo;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.AttendanceService;
 import com.example.demo.service.UserService;
+import com.example.demo.utils.UserUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -32,13 +29,14 @@ import java.util.Optional;
 public class AttendanceController {
     private final AttendanceService attendanceService;
     private final UserService userService;
+    private final UserUtils userUtils;
 
 
     @GetMapping("/admin/attendances")
     public String listAttendance(Model model,
                                  @RequestParam(required = false) String keyword,
-                                 @RequestParam(defaultValue = "1") int page,
-                                 @RequestParam(defaultValue = "3") int size) {
+                                 @RequestParam(defaultValue = Constants.PAGE) int page,
+                                 @RequestParam(defaultValue = Constants.SIZE) int size) {
 
         try {
 
@@ -128,9 +126,7 @@ public class AttendanceController {
 
     @GetMapping("/user/attendanceCheck")
     public String attendanceCheck(Model model) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetails customUserDetails = (CustomUserDetails) auth.getPrincipal();
-        String email = customUserDetails.getUsername();
+        String email = userUtils.getUserName();
         int id = userService.getUserByEmail(email).get().getId();
         Attendance attendance = attendanceService.setCheckIn(id);
         LocalTime timeCheckIn = attendance.getTimeCheckIn();

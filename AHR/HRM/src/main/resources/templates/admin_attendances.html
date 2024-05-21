@@ -47,6 +47,7 @@
                 <th scope="col">Date check</th>
                 <th scope="col">Time check in</th>
                 <th scope="col">Time check out</th>
+                <th scope="col">Working time</th>
                 <th scope="col">Status</th>
                 <th scope="col">Allowed</th>
                 <th scope="col">Actions</th>
@@ -63,6 +64,7 @@
                 <td th:unless="${attendance.timeCheckIn != null}" style="text-align: center;">-</td>
                 <td th:if="${attendance.timeCheckOut != null}" th:text="${attendance.timeCheckOut}"></td>
                 <td th:unless="${attendance.timeCheckOut != null}" style="text-align: center;">-</td>
+                <td th:if="${attendance.workTime != null}" th:text="${attendance.workTime}"></td>
                 <td th:text="${attendance.status}"></td>
                 <td th:if="${attendance.allowed != null}" th:text="${attendance.allowed}"></td>
                 <td th:unless="${attendance.allowed != null}" style="text-align: center;">-</td>

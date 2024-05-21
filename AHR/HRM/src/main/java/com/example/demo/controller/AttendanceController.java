@@ -4,6 +4,7 @@ import com.example.demo.constant.Constants;
 import com.example.demo.exception.AttendanceExistException;
 import com.example.demo.form.AttendanceForm;
 import com.example.demo.entity.Attendance;
+import com.example.demo.form.MailForm;
 import com.example.demo.repository.AttendanceRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.security.CustomUserDetails;
@@ -41,7 +42,8 @@ public class AttendanceController {
         try {
 
             Page<Attendance> pageTuts = attendanceService.getAllAttendancePaginable(page, size, keyword);
-
+            List<Attendance> mails = new ArrayList<Attendance>();
+            mails = pageTuts.getContent();
             if (keyword != null)
                 model.addAttribute("keyword", keyword);
             model.addAttribute("attendances", pageTuts.getContent());
@@ -133,7 +135,5 @@ public class AttendanceController {
         model.addAttribute("id", id);
         model.addAttribute("timeCheckIn", timeCheckIn);
         return "user_attendance_check";
-
-
     }
 }

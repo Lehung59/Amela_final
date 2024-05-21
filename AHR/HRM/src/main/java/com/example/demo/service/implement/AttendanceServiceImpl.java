@@ -11,11 +11,15 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.example.demo.constant.Constants.TIME_LUNCH;
+import static com.example.demo.constant.Constants.TIME_START_WORK;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
@@ -65,11 +69,14 @@ public class AttendanceServiceImpl implements AttendanceService {
             newObj.setStatus(Attendance.AttendanceStatus.MISS);
         } else if(attendance.getStatus().equals(Attendance.AttendanceStatus.LATE) ){
             newObj.setStatus(Attendance.AttendanceStatus.LATE);
-        } else if(attendance.getTimeCheckIn().isAfter(LocalTime.parse("08:00:00"))){
+        } else if(attendance.getTimeCheckIn().isAfter(TIME_START_WORK)){
             newObj.setStatus(Attendance.AttendanceStatus.LATE);
         } else {
             newObj.setStatus(Attendance.AttendanceStatus.ONTIME);
         }
+        newObj.setWorkTime(countWorkTime(newObj));
+
+
         attendanceRepo.save(newObj);
     }
 
@@ -80,16 +87,17 @@ public class AttendanceServiceImpl implements AttendanceService {
         oldObj.setDateCheck(attendance.getDateCheck());
         if(attendance.getTimeCheckOut() != null) oldObj.setTimeCheckOut(attendance.getTimeCheckOut());
         if(attendance.getTimeCheckIn() != null) oldObj.setTimeCheckIn(attendance.getTimeCheckIn());
-        if(attendance.getNote() != null) oldObj.setNote(attendance.getNote());
-
-        if(attendance.getTimeCheckIn().isBefore(LocalTime.parse("08:00:00"))) {
-            oldObj.setStatus(Attendance.AttendanceStatus.ONTIME);
-        }  else if(attendance.getTimeCheckIn().isAfter(LocalTime.parse("08:00:00"))) {
-            oldObj.setStatus(Attendance.AttendanceStatus.LATE);
-        }else if(attendance.getStatus().equals(Attendance.AttendanceStatus.MISS) ){
-            oldObj.setStatus(Attendance.AttendanceStatus.MISS);
-        } else if(attendance.getStatus().equals(Attendance.AttendanceStatus.LATE) ){
-            oldObj.setStatus(Attendance.AttendanceStatus.LATE);
+        if(!attendance.getNote().isEmpty()) oldObj.setNote(attendance.getNote());
+        if(attendance.getStatus() != null) {
+            oldObj.setStatus(attendance.getStatus());
+        }
+        else {
+            assert attendance.getTimeCheckIn() != null;
+            if (attendance.getTimeCheckIn().isBefore(TIME_START_WORK)) {
+                oldObj.setStatus(Attendance.AttendanceStatus.ONTIME);
+            } else if(attendance.getTimeCheckIn().isAfter(TIME_START_WORK)) {
+                oldObj.setStatus(Attendance.AttendanceStatus.LATE);
+            }
         }
 //        if(attendance.getStatus() != null) oldObj.setStatus(attendance.getStatus());
 //        oldObj.setAllowed(attendance.isAllowed());
@@ -101,6 +109,7 @@ public class AttendanceServiceImpl implements AttendanceService {
             oldObj.setAllowed(false);
             oldObj.setNote(null);
         }
+            oldObj.setWorkTime(countWorkTime(oldObj));
 
         attendanceRepo.save(oldObj);
     }
@@ -126,74 +135,72 @@ public class AttendanceServiceImpl implements AttendanceService {
             Attendance newObj = Attendance.builder()
                     .dateCheck(date)
                     .timeCheckIn(time)
-                    .timeCheckOut(null)
+                    .timeCheckOut(time)
                     .allowed(false)
-                    .status(time.isAfter(LocalTime.of(8, 0, 0)) ? Attendance.AttendanceStatus.LATE :Attendance.AttendanceStatus.ONTIME)
+                    .status(time.isAfter(TIME_START_WORK) ? Attendance.AttendanceStatus.LATE : Attendance.AttendanceStatus.ONTIME)
                     .user(user)
                     .note(null)
+                    .workTime(0)
                     .build();
             return attendanceRepo.save(newObj);
-        }else if (attendance.get().getTimeCheckIn() == null){
-            attendance.get().setTimeCheckIn(time);
-            return attendanceRepo.save(attendance.get());
         }
+        if (attendance.get().getTimeCheckIn() == null){
+            attendance.get().setTimeCheckIn(time);
+        }
+        attendance.get().setTimeCheckOut(time);
+        attendance.get().setWorkTime(countWorkTime(attendance.get()));
         return attendanceRepo.save(attendance.get());
 
     }
 
     @Override
     public Page<Attendance> getAllAttendancePaginable(int page, int size, String keyword) {
-        List<Attendance> attendances = new ArrayList<Attendance>();
-
         Pageable paging = PageRequest.of(page - 1, size);
-
-        Page<Attendance> pageTuts;
-        if (keyword == null) {
-            pageTuts = attendanceRepo.findAll(paging);
-        } else {
+        Page<Attendance> pageTuts = attendanceRepo.findAll(paging) ;
+        if (keyword != null) {
             pageTuts = attendanceRepo.findByTitleContainingIgnoreCase(keyword, paging);
-
         }
         return pageTuts;
     }
+
+
 
     @Override
     public List<Attendance> findByEmailAndDate(String email, LocalDate dateCheck) {
         return attendanceRepo.findByEmailAndDate(email,dateCheck);
     }
 
-//    @Override
-//    public Page<Attendance>  searchAttendance(String keyword, int pageNo, int pageSize) {
-//        List<Attendance> list = this.searchAttendance(keyword);
-//        Pageable pageable = PageRequest.of(pageNo-1,pageSize);
-//
-//        int start = (int) pageable.getOffset();
-//        int end = (int) ((pageable.getOffset() + pageable.getPageSize() ) > list.size() ? list.size() : pageable.getOffset() + pageable.getPageSize()) ;
-//        list = list.subList(start, end);
-//        return new PageImpl<>(list, pageable, list.size());
-//    }
-
-//    public Page<Attendance> getAllUser(int pageNumber, String keyword) {
-//        Pageable pageable = PageRequest.of(pageNumber - 1, 5, Sort.by("id").ascending());
-//
-//        Page<User> page;
-//
-//        if (keyword!=null) {
-//            return attendanceRepo.findAll(keyword, pageable);
-//        }
-//
-//        return attendanceRepo.findAll(pageable);
-//    }
 
 
-//    @Override
-//    public List<Attendance> searchAttendance(String keyword) {
-//        return attendanceRepo.searchAttendance(keyword);
-//    }
+    public double countWorkTime(Attendance attendance){
+        if(attendance.getStatus().equals(Attendance.AttendanceStatus.LATE) && attendance.isAllowed()){
+            attendance.setWorkTime(roundTime(TIME_START_WORK,attendance.getTimeCheckOut()));
+        } else if (attendance.getStatus().equals(Attendance.AttendanceStatus.MISS) && attendance.isAllowed()) {
+            attendance.setWorkTime(8);
+        } else if (attendance.getStatus().equals(Attendance.AttendanceStatus.MISS)) {
+            attendance.setWorkTime(0);
+        } else {
+            attendance.setWorkTime(roundTime(attendance.getTimeCheckIn(),attendance.getTimeCheckOut()));
+        }
 
+        return attendance.getWorkTime();
+    }
 
+    public double roundTime(LocalTime checkin, LocalTime checkout) {
+        System.out.println(checkin);
+        System.out.println(checkout);
+        Duration duration = Duration.between(checkin, checkout);
+        long minutes = duration.toMinutes();
 
-
+        double roundedHours = Math.ceil(minutes / 15.0) * 0.25;
+        if(checkin.isBefore(TIME_LUNCH))
+            roundedHours-=1.5;
+        if(roundedHours > 8){
+            System.out.println(roundedHours);
+            return 8;
+        }
+        return roundedHours;
+    }
 
     public Attendance mapFormToEntity(AttendanceForm form) {
         Attendance entity = modelMapper.map(form, Attendance.class);

@@ -62,7 +62,8 @@ public class SecurityConfiguration {
                 )
                 .formLogin(
                         l -> l.loginPage("/login").usernameParameter("email")
-                                .defaultSuccessUrl("/users").permitAll()
+                                .successHandler(new CustomAuthenticationSuccessHandler())
+                                .permitAll()
                 )
                 .logout(
                         l -> l.invalidateHttpSession(true).clearAuthentication(true)

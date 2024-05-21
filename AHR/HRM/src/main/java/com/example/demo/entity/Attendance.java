@@ -34,6 +34,7 @@ public class Attendance {
     @Column(name = "time_check_out")
     private LocalTime timeCheckOut;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private AttendanceStatus status;
 
@@ -42,6 +43,10 @@ public class Attendance {
 
     @Column(name = "note")
     private String note;
+
+    @Column(name = "work_time")
+    private double workTime;
+
 
     public enum AttendanceStatus {
         LATE,  MISS, ONTIME

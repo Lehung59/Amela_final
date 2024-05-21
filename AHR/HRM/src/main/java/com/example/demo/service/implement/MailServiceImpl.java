@@ -8,24 +8,18 @@ import com.example.demo.entity.Mail;
 import com.example.demo.repository.MailRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.utils.DateUtils;
-import com.example.demo.utils.EmailMix;
 import com.example.demo.utils.MailUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.bouncycastle.asn1.iana.IANAObjectIdentifiers.mail;
 
 @Service
 @RequiredArgsConstructor

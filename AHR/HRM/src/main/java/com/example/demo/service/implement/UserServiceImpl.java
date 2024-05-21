@@ -10,28 +10,24 @@ import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.TokenService;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.DateUtils;
-import com.example.demo.utils.EmailMix;
 import com.example.demo.utils.MailUtils;
 import com.example.demo.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import org.springframework.util.StreamUtils;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -265,7 +261,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<User> getAllUserPaging(int page, int size, String keyword) {
-        Pageable paging = PageRequest.of(page - 1, size);
+        Pageable paging = PageRequest.of(page - 1, size, Sort.by("id").descending());
         Page<User> pageTuts = userRepo.findAll(paging);
         if (keyword == null) {
             pageTuts = userRepo.findAll(paging);

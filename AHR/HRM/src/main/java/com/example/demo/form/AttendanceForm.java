@@ -28,6 +28,8 @@ public class AttendanceForm {
     @DateTimeFormat(pattern = "HH:mm:ss")
     private LocalTime timeCheckOut;
 
+    private double workTime;
+
     private AttendanceStatus status;
 
     private boolean allowed;

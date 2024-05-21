@@ -1,7 +1,14 @@
 package com.example.demo.constant;
 
 
+import java.time.LocalTime;
+
 public class Constants {
+
+    //dung gio
+    public static final LocalTime TIME_START_WORK = LocalTime.of(8, 0, 0);
+    public static final LocalTime TIME_LUNCH = LocalTime.of(12, 0);
+
     //phan trang
     public static final String PAGE = "1";
     public static final String SIZE = "3";

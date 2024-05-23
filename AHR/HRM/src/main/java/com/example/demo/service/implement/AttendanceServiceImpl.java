@@ -4,9 +4,11 @@ import com.example.demo.exception.AttendanceNotFoundException;
 import com.example.demo.entity.Attendance;
 import com.example.demo.entity.User;
 import com.example.demo.form.AttendanceForm;
+import com.example.demo.form.SearchForm;
 import com.example.demo.repository.AttendanceRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.AttendanceService;
+import com.example.demo.utils.DateUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -26,11 +28,13 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final AttendanceRepo attendanceRepo;
     private final UserRepo userRepo;
     private final ModelMapper modelMapper;
+    private final DateUtils dateUtils;
 
-    public AttendanceServiceImpl(AttendanceRepo attendanceRepo, UserRepo userRepo){
+    public AttendanceServiceImpl(AttendanceRepo attendanceRepo, UserRepo userRepo, DateUtils dateUtils){
         this.attendanceRepo = attendanceRepo;
         this.userRepo = userRepo;
         this.modelMapper = new ModelMapper();
+        this.dateUtils = dateUtils;
     }
 
     @Override
@@ -125,9 +129,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public Attendance setCheckIn(int id) {
+    public AttendanceForm setCheckIn(int id) {
         LocalDate date = LocalDate.now();
-        LocalTime time = LocalTime.now();
+        LocalTime time = LocalTime.now().withSecond(0).withNano(0); ;
         User user = userRepo.findById(id).get();
 
         Optional<Attendance> attendance = attendanceRepo.findByDateAndUserId(date,id);
@@ -142,26 +146,73 @@ public class AttendanceServiceImpl implements AttendanceService {
                     .note(null)
                     .workTime(0)
                     .build();
-            return attendanceRepo.save(newObj);
+            return mapEntityToForm(attendanceRepo.save(newObj));
         }
         if (attendance.get().getTimeCheckIn() == null){
             attendance.get().setTimeCheckIn(time);
         }
         attendance.get().setTimeCheckOut(time);
         attendance.get().setWorkTime(countWorkTime(attendance.get()));
-        return attendanceRepo.save(attendance.get());
+        return mapEntityToForm(attendanceRepo.save(attendance.get()));
 
     }
 
     @Override
-    public Page<Attendance> getAllAttendancePaginable(int page, int size, String keyword) {
-        Pageable paging = PageRequest.of(page - 1, size);
-        Page<Attendance> pageTuts = attendanceRepo.findAll(paging) ;
-        if (keyword != null) {
-            pageTuts = attendanceRepo.findByTitleContainingIgnoreCase(keyword, paging);
+    public Page<Attendance> getAllAttendancePaginable(SearchForm searchForm) {
+        int page = searchForm.getPage();
+        int size = searchForm.getSize();
+        int year = searchForm.getYear();
+        if(searchForm.getKeyword() == "") searchForm.setKeyword(null);
+        if(searchForm.getToDate()!=null && searchForm.getFromDate()!=null){
+            searchForm.setMonth(null);
+            searchForm.setYear(null);
+        } else if(searchForm.getMonth()!=null){
+            searchForm.setFromDate(null);
+            searchForm.setToDate(null);
+        }
+
+        Pageable paging = PageRequest.of(page - 1, size, Sort.by("id").descending());
+        Page<Attendance> pageTuts;
+        LocalDate toDate;
+        LocalDate fromDate;
+
+        if(searchForm.getKeyword()!=null){
+            String keyword = searchForm.getKeyword();
+            if(searchForm.getMonth()==null && searchForm.getToDate()==null && searchForm.getFromDate()==null){
+                pageTuts = attendanceRepo.findAllAttendance(paging,keyword) ;
+            } else {
+                if(searchForm.getMonth()!=null) {
+                    int month = searchForm.getMonth();
+                    fromDate = DateUtils.getFirstDayOfMonth(year, month);
+                    toDate = DateUtils.getLastDayOfMonth(year, month);
+                } else {
+                    toDate = searchForm.getToDate();
+                    System.out.println(toDate.toString());
+                    fromDate = searchForm.getFromDate();
+                }
+
+                pageTuts = attendanceRepo.findAllAttendance(paging,keyword,fromDate,toDate) ;
+            }
+        } else {
+            if(searchForm.getMonth()==null && searchForm.getToDate()==null && searchForm.getFromDate()==null){
+                pageTuts = attendanceRepo.findAllAttendanceNoKeyword(paging) ;
+            } else{
+                if(searchForm.getMonth()!=null){
+                    int month = searchForm.getMonth();
+                    fromDate = DateUtils.getFirstDayOfMonth(year, month);
+                    toDate = DateUtils.getLastDayOfMonth(year, month);
+                } else{
+                    toDate = searchForm.getToDate();
+                    fromDate = searchForm.getFromDate();
+                }
+                pageTuts = attendanceRepo.findAllAttendanceNoKeyword(paging,fromDate,toDate) ;
+
+            }
         }
         return pageTuts;
     }
+
+
 
 
 
@@ -170,6 +221,12 @@ public class AttendanceServiceImpl implements AttendanceService {
         return attendanceRepo.findByEmailAndDate(email,dateCheck);
     }
 
+    @Override
+    public Page<AttendanceForm> getAllAttendanceByIdPaginable(int page, int size,  int id, LocalDate startDate, LocalDate endDate) {
+        Pageable paging = PageRequest.of(page - 1, size, Sort.by("dateCheck").descending());
+        Page<Attendance> pageTuts = attendanceRepo.findAllByUserId(paging,id,startDate,endDate);
+        return pageTuts.map(this::mapEntityToForm);
+    }
 
 
     public double countWorkTime(Attendance attendance){
@@ -193,7 +250,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         long minutes = duration.toMinutes();
 
         double roundedHours = Math.ceil(minutes / 15.0) * 0.25;
-        if(checkin.isBefore(TIME_LUNCH))
+        if(checkin.isBefore(TIME_LUNCH) && checkout.isAfter(TIME_LUNCH))
             roundedHours-=1.5;
         if(roundedHours > 8){
             System.out.println(roundedHours);
@@ -205,5 +262,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     public Attendance mapFormToEntity(AttendanceForm form) {
         Attendance entity = modelMapper.map(form, Attendance.class);
         return entity;
+    }
+
+    public AttendanceForm mapEntityToForm(Attendance entity) {
+        AttendanceForm form = modelMapper.map(entity, AttendanceForm.class);
+        return form;
     }
 }

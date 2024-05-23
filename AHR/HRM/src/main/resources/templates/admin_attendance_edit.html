@@ -12,6 +12,41 @@
 
 </header>
 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("timeCheckOut").addEventListener("change", function() {
+            var checkInTime = document.getElementById("timeCheckIn").value;
+            var checkOutTime = this.value;
+            if (checkInTime && checkOutTime) {
+                if (checkInTime >= checkOutTime) {
+                    document.getElementById("checkoutError").style.display = "block";
+                    document.getElementById("submitbutton").disabled = true;
+
+                } else {
+                    document.getElementById("checkoutError").style.display = "none";
+                    document.getElementById("checkinError").style.display = "none";
+                    document.getElementById("submitbutton").disabled = false;
+                }
+            }
+        });
+        document.getElementById("timeCheckIn").addEventListener("change", function() {
+            var checkInTime = this.value;
+            var checkOutTime = document.getElementById("timeCheckOut").value;
+            if (checkInTime && checkOutTime) {
+                if (checkInTime >= checkOutTime) {
+                    document.getElementById("checkinError").style.display = "block";
+                    document.getElementById("submitbutton").disabled = true;
+                } else {
+                    document.getElementById("checkoutError").style.display = "none";
+                    document.getElementById("checkinError").style.display = "none";
+                    document.getElementById("submitbutton").disabled = false;
+                }
+            }
+        });
+    });
+
+</script>
+
 <body>
 <section class="">
     <div class="container py-5 h-100">
@@ -49,6 +84,8 @@
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="time" th:field="*{timeCheckIn}" class="form-control form-control-lg" id="timeCheckIn" />
                                         <label for="timeCheckIn" class="form-label">Giờ checkin</label>
+                                        <p id="checkinError" class="text-danger" style="margin-top: 0.25rem; display: none;">Giờ checkin phải nhỏ hơn giờ checkout</p>
+
                                     </div>
 
                                 </div>
@@ -57,6 +94,7 @@
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="time" th:field="*{timeCheckOut}" class="form-control form-control-lg" id="timeCheckOut" />
                                         <label for="timeCheckOut" class="form-label">Giờ checkout</label>
+                                        <p id="checkoutError" class="text-danger" style="margin-top: 0.25rem; display: none;">Giờ checkout phải lớn hơn giờ checkin</p>
                                     </div>
 
                                 </div>
@@ -97,7 +135,7 @@
                             </div>
 
                             <div class="mt-1 pt-1">
-                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="submit" value="Submit" />
+                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" id="submitbutton" type="submit" value="Submit" />
                             </div>
                         </form>
                     </div>

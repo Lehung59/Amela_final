@@ -22,10 +22,10 @@ public class AttendanceForm {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateCheck;
 
-    @DateTimeFormat(pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime timeCheckIn;
 
-    @DateTimeFormat(pattern = "HH:mm:ss")
+    @DateTimeFormat(pattern = "HH:mm")
     private LocalTime timeCheckOut;
 
     private double workTime;

@@ -7,15 +7,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
     <script th:src="@{/js/autocomplete.js}"></script>
     <link rel="stylesheet" th:href="@{/css/autocomplete.css}">
+    <script th:src="@{/webjars/jquery/3.7.0/dist/jquery.min.js}"></script>
+
 </head>
 
 <header th:replace="~{fragments/barside}">
 
 </header>
 
+
 <body>
 <section class="">
     <div class="container py-5 h-100">
+
+
         <div class="row justify-content-center align-items-center h-100">
             <div class="col-12 col-lg-9 col-xl-7">
                 <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
@@ -56,12 +61,18 @@
                                         <div data-mdb-input-init class="form-outline mb-3">
                                             <h6>Ngày gửi</h6>
                                             <input type="date" class="form-control" id="datepicker"
-                                                   th:field="*{dateSend}" autocomplete="off"/>
+                                                   th:field="*{dateSend}" autocomplete="off" th:attr="disabled=${mail.status} == ${SENT}"/>
                                         </div>
                                         <div data-mdb-input-init class="form-outline mb-3">
                                             <h6>Giờ gửi</h6>
                                             <input type="time" class="form-control" id="timepicker"
-                                                   th:field="*{timeSend}" autocomplete="off"/>
+                                                   th:field="*{timeSend}" autocomplete="off" th:attr="disabled=${mail.status} == ${SENT}"/>
+                                        </div>
+                                        <p id="time-warning" style="color: red;"></p>
+
+                                        <div data-mdb-input-init class="form-outline">
+                                            <h6>Trạng thái:</h6>
+                                            <span th:text="*{status}"></span>
                                         </div>
 
                                     </div>
@@ -74,7 +85,7 @@
                                     <div id="formHeader">
                                         <h6>Tiêu đề</h6>
                                         <label>
-                                            <textarea class="rounded" th:field="*{title}" rows="2" cols="65"></textarea>
+                                            <textarea class="rounded" th:field="*{title}" rows="2" cols="65" th:attr="readonly=${mail.status} == ${SENT}"></textarea>
                                         </label>
                                     </div>
                                 </div>
@@ -87,17 +98,19 @@
                                             <h6>Nội dung</h6>
                                             <label>
                                                 <textarea class="rounded" th:field="*{content}" rows="5"
-                                                          cols="65"></textarea>
+                                                          cols="65"  th:attr="readonly=${mail.status} == ${SENT}"></textarea>
                                             </label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="mt-1 pt-1 ">
+                            <div class="mt-1 pt-1 d-flex">
                                 <!--                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="button" value="Edit" th:attr="onclick='editAttendance(' + ${attendance.id} + ')'" />-->
-                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
+                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg m-1"
                                        type="button" value="Back" th:attr="onclick='backToMails()'"/>
+
+                                <button class="btn btn-primary btn-lg m-1" id="draftButton">Draft</button>
 
                                 <input th:attr="disabled=${mail.status} == ${SENT}" data-mdb-button-init
                                        data-mdb-ripple-init class="btn btn-primary btn-lg"
@@ -117,8 +130,114 @@
 </body>
 </html>
 
+
+<script th:inline="javascript">
+    var mailTime = /*[[${mail.timeSend}]]*/ null;
+    var mailDate = /*[[${mail.dateSend}]]*/ null
+</script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+        // Lấy phần tử nút <a> với id là draftButton
+        var dateInput = document.getElementById("datepicker");
+        var timeInput = document.getElementById("timepicker");
+        var submitBtn = document.querySelector("input[type='submit']");
+        var warningMessage = document.getElementById("time-warning");
+
+        dateInput.addEventListener("change", function () {
+        validateDateTime();
+    });
+
+        timeInput.addEventListener("change", function () {
+        validateDateTime();
+    });
+
+        function validateDateTime() {
+        var selectedDate = new Date(dateInput.value + "T" + timeInput.value);
+        var now = new Date();
+        var oneMinuteAhead = new Date(now.getTime() + 60000); // Thêm 1 phút
+
+        if (selectedDate <= oneMinuteAhead) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add("disabled");
+        warningMessage.innerHTML = "Hẹn thời gian xa hơn.";
+    } else {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove("disabled");
+        warningMessage.innerHTML = "";
+    }
+    }
+
+        // Kiểm tra ngay khi trang được tải
+        validateDateTime();
+    });
+</script>
+
+
 <script th:inline="javascript">
     var mailList = /*[[${mailList}]]*/ [];
+    var mailStatus = /*[[${mail.status}]]*/ null;
+    var mailId = /*[[${mail.mailId}]]*/ null
+</script>
+
+<script th:inline="javascript">
+
+
+    function saveDraft(url, data) {
+        console.log("Starting draft function");
+        console.log("URL:", url);
+        console.log("Data to be sent:", data);
+
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: data,
+                success: function (response) {
+                    console.log("Received response from server:", response);
+                    alert('Mail đã được lưu thành draft.');
+
+                },
+                error: function (ex) {
+                    console.error("Error during AJAX request:", ex);
+                    alert("Không thể kết nối đến máy chủ.");
+                    reject(ex); // Indicate failure of the API call
+                }
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var draftButton = document.getElementById("draftButton");
+
+        draftButton.addEventListener("click", function(event) {
+            event.preventDefault();
+
+            console.log(mailStatus);
+            console.log(mailId);
+
+            if (!(mailStatus === 'SENT')) {
+                var mailData = {
+                    id: mailId,
+                    dateSend: document.getElementById("datepicker").value,
+                    timeSend: document.getElementById("timepicker").value,
+                    mailRecipient: document.getElementById("mailRecipient").value,
+                    title: document.getElementById("title").value,
+                    content: document.getElementById("content").value
+                };
+
+                saveDraft("/admin/mail/setdraft", mailData).then(function() {
+                    window.location.href = "/admin/mails";
+                }).catch(function(ex) {
+                    console.error("Failed to save draft:", ex);
+                });
+            } else {
+                window.location.href = "/admin/mail/insert/re";
+            }
+        });
+    });
+
+
 </script>
 
 <script>

@@ -21,6 +21,13 @@
 <body>
 <section class="">
     <div class="container py-5 h-100">
+        <div th:if="${mess}" class="alert alert-success" role="alert">
+            <span th:text="${mess}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+
         <div class="row justify-content-center align-items-center h-100">
             <div class="col-12 col-lg-9 col-xl-7">
                 <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">

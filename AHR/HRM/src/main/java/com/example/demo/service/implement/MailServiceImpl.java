@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,6 +32,9 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     private final UserRepo userRepo;
     private final ThreadPoolTaskScheduler taskScheduler;
     private final MailUtils mailUtils;
+
+    private final Map<Integer, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
+
 
     @Override
     public List<MailForm> getAllMail() {
@@ -95,7 +101,10 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         String recipientAddress = mail.getMailRecipient();
         String subject = mail.getTitle();
         String message = mail.getContent();
-        taskScheduler.schedule(() -> sendEmail(recipientAddress,subject,message,id), zonedDateTime.toInstant());
+//        taskScheduler.schedule(() -> sendEmail(recipientAddress,subject,message,id), zonedDateTime.toInstant());
+        ScheduledFuture<?> future = taskScheduler.schedule(() -> sendEmail(recipientAddress, subject, message, id), zonedDateTime.toInstant());
+        scheduledTasks.put(id, future);
+        printTaskPool();
     }
     public void sendEmail(String recipientAddress, String subject, String message,int id) {
         mailUtils.sendContent(recipientAddress,subject,message);
@@ -113,7 +122,9 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     @Override
     public void updateMail(MailForm mailForm) {
         Mail mail = convertToMail(mailForm);
-        Optional<Mail> oldObj = mailRepo.findById(mail.getMailId());
+        int id = mailForm.getMailId();
+        Optional<Mail> oldObj = mailRepo.findById(id);
+        cancelScheduledEmail(id);
         mailRepo.deleteAllUsersByMailId(mail.getMailId());
 
         String listMails = mailForm.getMailRecipient().replaceAll("\\s+", "");
@@ -131,32 +142,26 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         Mail oldMail = oldObj.get();
         oldMail.getUsers().clear();
 
-        // Thêm người dùng mới vào danh sách liên kết
         oldMail.getUsers().addAll(foundUsers);
-//        List<User> usersToRemove = new ArrayList<>();
-//        for (User user : oldMail.getUsers()) {
-//            if (!foundUsers.contains(user)) {
-//                usersToRemove.add(user);
-//            }
-//        }
-//        oldMail.getUsers().removeAll(usersToRemove);
 
-        // Thêm danh sách người dùng mới
-//        for (User user : foundUsers) {
-//            if (!oldMail.getUsers().contains(user)) {
-//                oldMail.getUsers().add(user);
-//            }
-//        }
 
         oldMail.setMailRecipient(mail.getMailRecipient());
         oldMail.setContent(mail.getContent());
-        if(mail.getStatus()!=null)
-            oldMail.setStatus(mail.getStatus());
+
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(mail.getDateSend(),mail.getTimeSend(), ZoneId.systemDefault());
+
+        ScheduledFuture<?> future = taskScheduler.schedule(() -> sendEmail(oldMail.getMailRecipient(), oldMail.getTitle(), oldMail.getContent(), id), zonedDateTime.toInstant());
+        scheduledTasks.put(id, future);
+        printTaskPool();
+        oldMail.setTimeSend(mail.getTimeSend());
+        oldMail.setStatus(MailStatus.PENDING);
         oldMail.setTitle(mail.getTitle());
         oldMail.setDateSend(mail.getDateSend());
         oldMail.setUpdatedAt(DateUtils.getCurrentDay());
         oldMail.setUsers(foundUsers);
         mailRepo.save(oldMail);
+
+        printTaskPool();
     }
 
     @Override
@@ -190,37 +195,92 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         return new PageImpl<>(mailFormList, pageable, mailList.getTotalElements());
     }
 
+//    @Override
+//    public void draftMail(MailForm mailForm) {
+//        if (mailForm.getMailId() == -1) {
+//            Mail mail = new Mail();
+//            if (mailForm.getMailRecipient() != null) {
+//                mail.setMailRecipient(mailForm.getMailRecipient());
+//            } else mail.setMailRecipient("");
+//            mail.setTitle(mailForm.getTitle());
+//            mail.setContent(mailForm.getContent());
+//            mail.setStatus(MailStatus.DRAFT);
+//            mail.setCreatedAt(DateUtils.getCurrentDay());
+//            mail.setUpdatedAt(DateUtils.getCurrentDay());
+//            mail.setTimeSend(mailForm.getTimeSend());
+//            mail.setDateSend(mailForm.getDateSend());
+//
+//            mailRepo.save(mail);
+//        }
+//        if(mailForm.getMailId()!=-1) {
+//            Mail mail = mailRepo.findById(mailForm.getMailId()).get();
+//            cancelScheduledEmail(mailForm.getMailId());
+//            if (mailForm.getMailRecipient() != null) {
+//                mail.setMailRecipient(mailForm.getMailRecipient());
+//            } else mail.setMailRecipient("");
+//            mail.setTitle(mailForm.getTitle());
+//            mail.setContent(mailForm.getContent());
+//            mail.setStatus(MailStatus.DRAFT);
+//            mail.setTimeSend(mailForm.getTimeSend());
+//            mail.setDateSend(mailForm.getDateSend());
+//            mail.setUpdatedAt(DateUtils.getCurrentDay());
+//            mailRepo.save(mail);
+//
+//        }
+//    }
+
     @Override
-    public void draftMail(MailForm mailForm) {
-        if (mailForm.getMailId() == -1) {
-            Mail mail = new Mail();
-            if (mailForm.getMailRecipient() != null) {
-                mail.setMailRecipient(mailForm.getMailRecipient());
-            } else mail.setMailRecipient("");
-            mail.setTitle(mailForm.getTitle());
-            mail.setContent(mailForm.getContent());
-            mail.setStatus(MailStatus.DRAFT);
-            mail.setCreatedAt(DateUtils.getCurrentDay());
-            mail.setUpdatedAt(DateUtils.getCurrentDay());
-            mail.setTimeSend(mailForm.getTimeSend());
-            mail.setDateSend(mailForm.getDateSend());
+    public Optional<Mail> checkExsist(Integer id) {
+        return mailRepo.findById(id);
+    }
 
-            mailRepo.save(mail);
-        }
-        if(mailForm.getMailId()!=-1) {
-            Mail mail = mailRepo.findById(mailForm.getMailId()).get();
-            if (mailForm.getMailRecipient() != null) {
-                mail.setMailRecipient(mailForm.getMailRecipient());
-            } else mail.setMailRecipient("");
-            mail.setTitle(mailForm.getTitle());
-            mail.setContent(mailForm.getContent());
-            mail.setStatus(MailStatus.DRAFT);
-            mail.setTimeSend(mailForm.getTimeSend());
-            mail.setDateSend(mailForm.getDateSend());
-            mail.setUpdatedAt(DateUtils.getCurrentDay());
-            mailRepo.save(mail);
+    @Override
+    public void draftNewMail(MailForm mailForm) {
+        Mail mail = convertToMail(mailForm);
+        mailRepo.save(mail);
 
+        printTaskPool();
+
+    }
+
+    @Override
+    public void draftExistMail(MailForm mailForm) {
+        cancelScheduledEmail(mailForm.getMailId());
+        Mail oldMail = mailRepo.findById(mailForm.getMailId()).get();
+        oldMail.setStatus(MailStatus.DRAFT);
+        oldMail.setCreatedAt(DateUtils.getCurrentDay());
+
+        oldMail.setUpdatedAt(DateUtils.getCurrentDay());
+        oldMail.setDateSend(mailForm.getDateSend());
+        oldMail.setTitle(mailForm.getTitle());
+        oldMail.setContent(mailForm.getContent());
+        oldMail.setMailRecipient(mailForm.getMailRecipient());
+        oldMail.setTimeSend(mailForm.getTimeSend());
+
+
+        String listMails = mailForm.getMailRecipient().replaceAll("\\s+", "");
+        List<String> emailList = Arrays.asList(listMails.split(","));
+        List<User> foundUsers = new ArrayList<>();
+        for (String email : emailList) {
+            Optional<User> userOptional = userRepo.findByEmail(email);
+            if(userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
+            userOptional.ifPresent(foundUsers::add);
         }
+
+        oldMail.getUsers().clear();
+
+        oldMail.getUsers().addAll(foundUsers);
+
+        try{
+            Mail oll =  mailRepo.save(oldMail);
+        } catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+        Mail newMail = convertToMail(mailForm);
+
+        printTaskPool();
+
+
     }
 
 
@@ -259,6 +319,27 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
                 .updatedAt(mailForm.getUpdatedAt())
                 .users(mailForm.getUsers()) // Ensure this is a correct list of User entities
                 .build();
+    }
+
+    public void printTaskPool() {
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) taskScheduler.getScheduledExecutor();
+        System.out.println("Thông tin về các nhiệm vụ lên lịch:");
+        for (Map.Entry<Integer, ScheduledFuture<?>> entry : scheduledTasks.entrySet()) {
+            int id = entry.getKey();
+            ScheduledFuture<?> future = entry.getValue();
+            long delay = future.getDelay(TimeUnit.MINUTES); // Lấy thời gian còn lại cho đến khi nhiệm vụ được chạy (tính bằng giây)
+
+            System.out.println("ID của email: " + id + ", Thời gian chờ: " + delay + " phút");
+        }
+        // Nếu bạn muốn in ra thông tin chi tiết về mỗi task, bạn có thể lặp qua hàng đợi và in ra thông tin của từng task.
+    }
+
+    public void cancelScheduledEmail(int id) {
+        ScheduledFuture<?> future = scheduledTasks.get(id);
+        if (future != null) {
+            future.cancel(true); // Hủy bỏ nhiệm vụ
+            scheduledTasks.remove(id); // Xóa ánh xạ trong Map
+        }
     }
 
 }

@@ -5,6 +5,7 @@ import com.example.demo.entity.Token;
 import com.example.demo.entity.User;
 import com.example.demo.form.ChangePasswordForm;
 import com.example.demo.form.LoginForm;
+import com.example.demo.form.SearchForm;
 import com.example.demo.form.UserForm;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.TokenService;
@@ -51,6 +52,12 @@ public class UserController {
                 model.addAttribute("keyword", keyword);
 
             }
+            SearchForm searchForm = SearchForm.builder()
+                    .keyword(keyword)
+                    .size(size)
+                    .page(page)
+                    .build();
+            model.addAttribute("searchForm", searchForm);
             model.addAttribute("users", pageTuts.getContent());
             model.addAttribute("currentPage", pageTuts.getNumber() + 1);
             model.addAttribute("totalItems", pageTuts.getTotalElements());

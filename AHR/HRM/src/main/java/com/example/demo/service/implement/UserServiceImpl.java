@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,6 +46,9 @@ public class UserServiceImpl implements UserService {
     private final TemplateEngine templateEngine;
     private final ResourceLoader resourceLoader;
     private final MailUtils mailUtils;
+
+    private final ThreadPoolTaskScheduler taskScheduler;
+
 
 
 //    @Override
@@ -346,6 +350,8 @@ public class UserServiceImpl implements UserService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
     }
+
+
 
 
 }

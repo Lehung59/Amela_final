@@ -1,10 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>User </title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
 </head>
+<style>
+    .page-item.active a {
+        background-color: #dea8059c;
+        color: white;
+    }
+</style>
+<header th:replace="~{fragments/barside}">
+</header>
 <body>
+
+<div class="container">
+    <div th:if="${mess}" class="alert alert-success" role="alert">
+        <span th:text="${mess}"></span>
+    </div>
+    <div class="row mt-5 mb-5 p-2" style="background-color: #dea8059c;">
+
+        <h1 class="mt-5 mb-5" style="color: black;">Attendance List</h1>
+        <div class="d-flex justify-content-between">
+            <div>
+                <div>
+                    <span>Hôm nay bạn đã checkin lúc <b th:text="${attendanceNow.timeCheckIn}"></b></span>
+                </div>
+                <div>
+                    <span>Hôm nay bạn đã checkout lúc <b th:text="${attendanceNow.timeCheckOut}"></b> </span>
+                </div>
+            </div>
+            <div>
+                <a th:href="@{/user/checkout}" class="btn btn-primary btn-lg"
+                   style=" background-color: rgba(225,37,37,0.7)">CHECKOUT</a>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between">
+        <div class="">
+
+        </div>
+
+        <div class="">
+            <form th:action="@{/user/attendanceCheck}" method="get" th:object="${searchForm}">
+                <div class="d-flex mb-1">
+                    <div class="col-auto m-lg-1">
+                        <select class="form-select" id="sel1" th:field="*{month}"  name="month" >
+                            <option th:each="index : ${#numbers.sequence(1, 12)}" th:value="${index}" th:text="${'Tháng ' + index}"></option>
+                        </select>
+                    </div>
+                    <div class="col-auto m-lg-1">
+                        <select class="form-select" id="sel2" th:field="*{year}"  name="year" >
+                            <option th:each="index : ${#numbers.sequence(2024, 2019)}" th:value="${index}" th:text="${'Năm ' + index}"></option>
+                        </select>
+                    </div>
+                    <div class="col-auto m-lg-1">
+                        <button type="submit" class="btn btn-secondary"
+                                style="background-color: #dea8059c; color: #333333 ">Search
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div th:if="${attendances.size() > 0}">
+        <table class="table table-hover table-responsive-xl table-striped">
+            <thead class="" style=" background-color: #dea8059c; ">
+            <tr>
+                <th scope="col">Id</th>
+                <th scope="col">Email</th>
+                <th scope="col">Full name</th>
+                <th scope="col">Date check</th>
+                <th scope="col">Time check in</th>
+                <th scope="col">Time check out</th>
+                <th scope="col">Working time</th>
+                <th scope="col">Status</th>
+                <th scope="col">Allowed</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="attendance : ${attendances}">
+                <th scope="row" th:text="${attendance.id}"></th>
+                <td th:text="${attendance.user.email}"></td>
+                <td th:text="${attendance.user.firstName} +' '+${attendance.user.lastName}"></td>
+                <td th:if="${attendance.dateCheck != null}" th:text="${attendance.dateCheck}"></td>
+                <td th:unless="${attendance.dateCheck != null}" style="text-align: center;">-</td>
+                <td th:if="${attendance.timeCheckIn != null}" th:text="${attendance.timeCheckIn}"></td>
+                <td th:unless="${attendance.timeCheckIn != null}" style="text-align: center;">-</td>
+                <td th:if="${attendance.timeCheckOut != null}" th:text="${attendance.timeCheckOut}"></td>
+                <td th:unless="${attendance.timeCheckOut != null}" style="text-align: center;">-</td>
+                <td th:if="${attendance.workTime != null}" th:text="${attendance.workTime}"></td>
+                <td th:text="${attendance.status}"></td>
+                <td th:if="${attendance.allowed != null}" th:text="${attendance.allowed}"></td>
+                <td th:unless="${attendance.allowed != null}" style="text-align: center;">-</td>
+
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:unless="${attendances.size() > 0}">
+        <span>No tutorials found!</span>
+    </div>
+    <div th:replace="~{fragments/paging :: pagination('/user/attendanceCheck')}"></div>
+
+</div>
+
+
+<!--<div class="container">-->
+
+
+<!--    <div class="row mt-5 mb-5 p-2" style="background-color: #dea8059c;">-->
+<!--        <h1 class="mt-5 mb-5" style="color: black;">Attendance List</h1>-->
+<!--        <div class="d-flex justify-content-between">-->
+<!--            <div >-->
+<!--                <div>-->
+<!--                    <span>Hôm nay bạn đã checkin lúc <b th:text="${attendanceNow.timeCheckIn}"></b></span>-->
+<!--                </div>-->
+<!--                <div>-->
+<!--                    <span>Hôm nay bạn đã checkout lúc <b th:text="${attendanceNow.timeCheckOut}"></b> </span>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div>-->
+<!--                <a th:href="@{/user/checkout}" class="btn btn-primary btn-lg" style=" background-color: rgba(225,37,37,0.7)">CHECKOUT</a>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+
+
+<!--</div>-->
+
 
 </body>
 </html>

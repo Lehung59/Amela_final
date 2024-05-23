@@ -14,59 +14,8 @@
         color: white;
     }
 </style>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Lắng nghe sự kiện khi thay đổi giá trị của phần tử start date và end date
-        document.getElementById("fromDate").addEventListener("change", function() {
-            validateDateOrder();
-            clearMonthAndYear();
-        });
-        document.getElementById("toDate").addEventListener("change", function() {
-            validateDateOrder();
-            clearMonthAndYear();
-        });
-
-        // Lắng nghe sự kiện khi thay đổi giá trị của phần tử month và year
-        document.getElementById("sel1").addEventListener("change", function() {
-            clearStartDateAndEndDate();
-        });
-        document.getElementById("sel2").addEventListener("change", function() {
-            clearStartDateAndEndDate();
-        });
-
-        function clearMonthAndYear() {
-            // Chuyển giá trị phần month và year thành rỗng (tạo ra một giá trị là "Tháng" và "Năm" không chứa giá trị nào)
-            document.getElementById("sel1").value = "";
-            document.getElementById("sel2").value = "";
-            console.log(12)
-        }
-
-        function clearStartDateAndEndDate() {
-            // Xóa giá trị trong phần start date và end date
-            document.getElementById("fromDate").value = "";
-            document.getElementById("toDate").value = "";
-            console.log(21)
-        }
-
-        function validateDateOrder() {
-            var startDate = document.getElementById("fromDate").value;
-            var endDate = document.getElementById("toDate").value;
-
-            if (startDate && endDate) { // Chỉ kiểm tra nếu cả hai trường đều đã được nhập
-                if (new Date(startDate) > new Date(endDate)) { // Nếu ngày bắt đầu lớn hơn ngày kết thúc
-                    alert("Start date must be before end date!");
-                    // Xóa giá trị trong phần start date và end date
-                    document.getElementById("fromDate").value = "";
-                    document.getElementById("toDate").value = "";
-                }
-            }
-        }
-    });
-
-</script>
 <body>
-<div th:replace="~{fragments/barside}">
+<div >
 
 </div>
 <div class="container">
@@ -79,41 +28,30 @@
                style="background-color: #dea8059c; color: black;"> Add Attendance</a>
         </div>
         <div class="">
-            <form th:object="${searchForm}">
+            <form   >
                 <div class="input-group d-flex">
-                    <input id="keyword" type="search" name="keyword" th:field="*{keyword}"  class="form-control"
+                    <input id="keyword" type="search" name="keyword"  required class="form-control"
                            placeholder="Enter keyword">
-<!--                    <button type="submit" class="btn btn-secondary" style="background-color: #dea8059c; color: #333333 ">Search</button>-->
+                    <!--                    <button type="submit" class="btn btn-secondary" style="background-color: #dea8059c; color: #333333 ">Search</button>-->
                 </div>
-                <div class=" d-flex justify-content-between mt-2">
-                    <div>
-                        <p class="m-0">Start date</p>
-                        <input type="date" name="fromDate" class="form-control" th:field="*{fromDate}"
-                               id="fromDate"/>
-                    </div>
-                    <div>
-                        <p class="m-0">End date</p>
-                        <input type="date" name="toDate" class="form-control" th:field="*{toDate}"
-                               id="toDate"/>
-                    </div>
-
-
-
+                <div class=" d-flex justify-content-between">
+                    <input type="date" name="fromDate" th:field="*{fromDate}"
+                           id="fromDate"/>
+                    <input type="date" name="toDate" th:field="*{toDate}"
+                           id="toDate"/>
                 </div>
-                <div class="d-flex justify-content-between mb-1 mt-2">
-                    <div class="col-auto ">
+                <div class="d-flex mb-1">
+                    <div class="col-auto m-lg-1">
                         <select class="form-select" id="sel1" th:field="*{month}"  name="month" >
-                            <option  value="">Tháng</option>
                             <option th:each="index : ${#numbers.sequence(1, 12)}" th:value="${index}" th:text="${'Tháng ' + index}"></option>
                         </select>
                     </div>
-                    <div class="col-auto ">
+                    <div class="col-auto m-lg-1">
                         <select class="form-select" id="sel2" th:field="*{year}"  name="year" >
-                            <option  value="">Năm</option>
                             <option th:each="index : ${#numbers.sequence(2024, 2019)}" th:value="${index}" th:text="${'Năm ' + index}"></option>
                         </select>
                     </div>
-                    <div class="col-auto">
+                    <div class="col-auto m-lg-1">
                         <button type="submit" class="btn btn-secondary"
                                 style="background-color: #dea8059c; color: #333333 ">Search
                         </button>
@@ -225,7 +163,5 @@
             this.classList.add('active');
         });
     });
-
-
 
 </script>

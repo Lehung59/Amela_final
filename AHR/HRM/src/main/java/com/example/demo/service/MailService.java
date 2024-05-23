@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface MailService {
 
@@ -18,5 +19,11 @@ public interface MailService {
      Page<MailForm> findAllMailPaginable(Pageable pageable);
      Page<MailForm> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
 
-     void draftMail(MailForm mailForm);
+//     void draftMail(MailForm mailForm);
+
+     Optional<Mail> checkExsist(Integer id);
+
+     void draftNewMail(MailForm mailForm);
+
+     void draftExistMail(MailForm mailForm);
 }

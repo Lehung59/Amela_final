@@ -1,15 +1,18 @@
 package com.example.demo.controller;
 
 import com.example.demo.constant.Constants;
+import com.example.demo.entity.MailStatus;
 import com.example.demo.exception.AttendanceExistException;
 import com.example.demo.form.AttendanceForm;
 import com.example.demo.entity.Attendance;
 import com.example.demo.form.MailForm;
+import com.example.demo.form.SearchForm;
 import com.example.demo.repository.AttendanceRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.AttendanceService;
 import com.example.demo.service.UserService;
+import com.example.demo.utils.DateUtils;
 import com.example.demo.utils.UserUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,9 +22,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,19 +38,33 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
     private final UserService userService;
     private final UserUtils userUtils;
+    private final DateUtils dateUtils;
 
 
     @GetMapping("/admin/attendances")
     public String listAttendance(Model model,
                                  @RequestParam(required = false) String keyword,
+                                 @RequestParam(required = false) Integer month,
+                                 @RequestParam(defaultValue = "2024") Integer year,
+                                 @RequestParam(required = false) LocalDate fromDate,
+                                 @RequestParam(required = false) LocalDate toDate,
                                  @RequestParam(defaultValue = Constants.PAGE) int page,
                                  @RequestParam(defaultValue = Constants.SIZE) int size) {
 
         try {
+            if (month == null) month = DateUtils.getCurrentMonth();
+            SearchForm searchForm = SearchForm.builder()
+                    .keyword(keyword)
+                    .year(year)
+                    .month(month)
+                    .page(page)
+                    .size(size)
+                    .fromDate(fromDate)
+                    .toDate(toDate)
+                    .build();
+            Page<Attendance> pageTuts = attendanceService.getAllAttendancePaginable(searchForm);
 
-            Page<Attendance> pageTuts = attendanceService.getAllAttendancePaginable(page, size, keyword);
-            List<Attendance> mails = new ArrayList<Attendance>();
-            mails = pageTuts.getContent();
+            model.addAttribute("searchForm", searchForm);
             if (keyword != null)
                 model.addAttribute("keyword", keyword);
             model.addAttribute("attendances", pageTuts.getContent());
@@ -121,19 +142,65 @@ public class AttendanceController {
         if (bindingResult.hasErrors()) {
             return "admin_attendance_edit";
         }
+
         attendanceForm.setId(id);
         attendanceService.updateAttendance(attendanceForm);
         return "redirect:/admin/attendances";
     }
 
     @GetMapping("/user/attendanceCheck")
-    public String attendanceCheck(Model model) {
-        String email = userUtils.getUserName();
-        int id = userService.getUserByEmail(email).get().getId();
-        Attendance attendance = attendanceService.setCheckIn(id);
-        LocalTime timeCheckIn = attendance.getTimeCheckIn();
-        model.addAttribute("id", id);
-        model.addAttribute("timeCheckIn", timeCheckIn);
+    public String attendanceCheck(Model model,
+                                  @RequestParam(required = false) Integer month,
+                                  @RequestParam(defaultValue = "2024") Integer year,
+                                  @RequestParam(defaultValue = Constants.PAGE) int page,
+                                  @RequestParam(defaultValue = Constants.SIZE) int size,
+                                  @RequestParam(required = false) LocalDate fromDate,
+                                  @RequestParam(required = false) LocalDate toDate) {
+        try {
+            LocalDate startDate = DateUtils.getFirstDayOfMonth(year,month);
+            LocalDate endDate = DateUtils.getLastDayOfMonth(year,month);
+
+            String email = userUtils.getUserName();
+            int id = userService.getUserByEmail(email).get().getId();
+            Page<AttendanceForm> pageTuts = attendanceService.getAllAttendanceByIdPaginable(page, size, id,startDate,endDate);
+            List<AttendanceForm> attendanceForms = pageTuts.getContent();
+            if (month == null) month = DateUtils.getCurrentMonth();
+            SearchForm searchForm = SearchForm.builder()
+                    .keyword(null)
+                    .page(page)
+                    .size(size)
+                    .year(year)
+                    .fromDate(fromDate)
+                    .toDate(toDate)
+                    .month(month)
+                    .build();
+
+            model.addAttribute("searchForm", searchForm);
+            model.addAttribute("attendances", pageTuts.getContent());
+            model.addAttribute("currentPage", pageTuts.getNumber() + 1);
+            model.addAttribute("totalItems", pageTuts.getTotalElements());
+            model.addAttribute("totalPages", pageTuts.getTotalPages());
+            model.addAttribute("pageSize", size);
+
+
+            AttendanceForm attendanceNow = attendanceService.setCheckIn(id);
+            model.addAttribute("id", id);
+            model.addAttribute("attendanceNow", attendanceNow);
+
+        } catch (Exception e) {
+            model.addAttribute("message", e.getMessage());
+        }
         return "user_attendance_check";
     }
+
+    @GetMapping("/user/checkout")
+    public String attendanceCheckout(RedirectAttributes redirectAttributes){
+        String email = userUtils.getUserName();
+        int id = userService.getUserByEmail(email).get().getId();
+        attendanceService.setCheckIn(id);
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Check out thành công");
+        return "redirect:/user/attendanceCheck";
+
+    }
+
 }

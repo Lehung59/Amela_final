@@ -21,6 +21,13 @@
 
 
 <div class="container">
+    <div th:if="${mess}" class="alert alert-success" role="alert">
+        <span th:text="${mess}"></span>
+    </div>
+    <div th:if="${error}" class="alert alert-danger" role="alert">
+        <span th:text="${error}"></span>
+    </div>
+
     <div class="row mt-5 mb-5" style="background-color: #dea8059c;">
         <h1 class="mt-5 mb-5" style="color: black;">List Email</h1>
     </div>

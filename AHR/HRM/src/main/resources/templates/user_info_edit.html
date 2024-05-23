@@ -7,33 +7,37 @@
     <script th:src="@{/webjars/jquery/3.7.0/dist/jquery.min.js}"></script>
     <script th:src="@{/js/checkExistInput.js}">
     </script>
-<!--    <style>-->
-<!--        /* CSS for changing color when radio button is checked */-->
-<!--        .form-check-input:checked + .form-check-label::before {-->
-<!--            background-color: #eea738;-->
-<!--        }-->
+    <!--    <style>-->
+    <!--        /* CSS for changing color when radio button is checked */-->
+    <!--        .form-check-input:checked + .form-check-label::before {-->
+    <!--            background-color: #eea738;-->
+    <!--        }-->
 
-<!--        /* CSS for changing background color of submit button */-->
-<!--        .btn-primary {-->
-<!--            background-color: #eea738;-->
-<!--        }-->
+    <!--        /* CSS for changing background color of submit button */-->
+    <!--        .btn-primary {-->
+    <!--            background-color: #eea738;-->
+    <!--        }-->
 
-<!--    </style>-->
+    <!--    </style>-->
 </head>
 
 
 <body>
-<div th:replace="~{fragments/barside}" >
+<div th:replace="~{fragments/barside}">
 
 </div>
 <section class="">
     <div class="container py-5 h-100">
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
+
         <div class="row justify-content-center align-items-center h-100">
             <div class="col-12 col-lg-9 col-xl-7">
                 <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
                     <div class="card-body p-4 p-md-5">
                         <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Update Form</h3>
-                        <form th:action="@{/user/info/edit}" th:object="${userForm}" method="POST"
+                        <form th:action="@{/user/info/edit}" th:object="${userForm}" method="POST" enctype="multipart/form-data"
                               onsubmit="return confirmSubmit();">
                             <div class="row">
                                 <div class="col-md-6 mb-4">
@@ -78,13 +82,15 @@
                                         <!--                  <select th:field="*{male}">-->
                                         <!--                    <option th:value=1 th:text="Male">-->
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" th:field="*{male}" type="radio" name="gender"
+                                            <input class="form-check-input" th:field="*{male}" type="radio"
+                                                   name="gender"
                                                    id="femaleGender" th:value="0" th:checked="*{!male}"/>
                                             <label class="form-check-label" for="femaleGender">Female</label>
                                         </div>
 
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" th:field="*{male}" type="radio" name="gender"
+                                            <input class="form-check-input" th:field="*{male}" type="radio"
+                                                   name="gender"
                                                    id="maleGender" th:value="1" th:checked="*{male}"/>
                                             <label class="form-check-label" for="maleGender">Male</label>
                                         </div>
@@ -106,7 +112,8 @@
 
                                     <div data-mdb-input-init class="form-outline">
                                         <input type="tel" th:field="*{phoneNumber}" id="phoneNumber"
-                                               class="form-control form-control-lg"  onblur="validatePhone('phoneNumber','phoneError','submitButton',currentNumber)"/>
+                                               class="form-control form-control-lg"
+                                               onblur="validatePhone('phoneNumber','phoneError','submitButton',currentNumber)"/>
                                         <label class="form-label" for="phoneNumber">Phone Number</label>
                                         <p id="phoneError" class="text-danger"></p>
                                         <p th:if="${#fields.hasErrors('phoneNumber')}" class="text-danger"
@@ -138,6 +145,20 @@
 
                             </div>
                             <div class="row">
+                                <div class="col-md-6 mb-4 pb-2">
+                                    <!-- Display current avatar -->
+                                    <div class="mb-3 text-center">
+                                        <img id="avatarPreview" th:src="${userForm.avatar}" alt="Avatar" style="width: 150px; height: 150px; border-radius: 50%;"/>
+                                    </div>
+                                    <!-- File input for new avatar -->
+                                    <div class="form-outline">
+                                        <input type="file" th:field="*{avatarFile}" id="avatarFile" class="form-control form-control-lg" accept="image/*" onchange="previewImage(event)"/>
+                                        <label class="form-label" for="avatarFile">Upload New Avatar</label>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <div class="row">
                                 <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
                                     <a class="btn btn-primary btn-lg"
                                        style="background-color: #eea738" th:href="@{/users}">Back</a>
@@ -145,15 +166,10 @@
                                 <!-- Tr??ng input ?n ?? l?u giá tr? -->
                                 <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
 
-                                    <input id="submitButton" class="btn btn-primary btn-lg" type="submit" value="Submit"  style="background-color: #eea738"/>
-
-<!--                                    <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"-->
-<!--                                           type="submit" value="Submit" style="background-color: #eea738"/>-->
+                                    <input id="submitButton" class="btn btn-primary btn-lg" type="submit" value="Submit"
+                                           style="background-color: #eea738"/>
                                 </div>
                             </div>
-
-
-
 
 
                         </form>
@@ -167,43 +183,29 @@
 </html>
 
 <script>
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const output = document.getElementById('avatarPreview');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
     var currentNumber = "[[${userForm.phoneNumber}]]"
 
-    // function toggleActive(checkbox) {
-    //     // Ki?m tra tr?ng thái checkbox
-    //     const isChecked = checkbox.checked;
-    //
-    //     // T?o thông báo d?a trên tr?ng thái
-    //     const message = isChecked ?
-    //         "B?n mu?n kích ho?t tài kho?n này?" :
-    //         "B?n mu?n ng?ng kích ho?t tài kho?n này?";
-    //
-    //     // Hi?n th? thông báo và ki?m tra s? ??ng ý
-    //     const confirmed = confirm(message);
-    //
-    //     if (!confirmed) {
-    //         // Hoàn tác l?i tr?ng thái checkbox n?u ng??i dùng không ??ng ý
-    //         checkbox.checked = !isChecked;
-    //         return;
-    //     }
-    //
-    //     // C?p nh?t giá tr? c?a input ?n 'active'
-    //     document.getElementById("active").value = isChecked;
-    // }
-</script>
-
-<script>
     url = "[[@{/user/info/edit/password/}]]"
-    function confirmSubmit() {
-    let confirmed = confirm("Are you sure you want to submit?");
 
-    return confirmed;
+    function confirmSubmit() {
+        let confirmed = confirm("Are you sure you want to submit?");
+
+        return confirmed;
     }
 
     function changePass(userId) {
         // window.location = url + userId;
 
-        console.log( url + userId)
+        console.log(url + userId)
     }
 
 </script>

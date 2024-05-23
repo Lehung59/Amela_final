@@ -20,7 +20,7 @@ public interface UserService {
 
     User getUserById(int id);
 
-    void updateUser(UserForm userForm,int id);
+    void updateUser(UserForm userForm) throws Exception;
     void changePassword(int id, String newPassword) throws Exception;
 
     Page<User> findPaginated(int pageNo, int pageSize);

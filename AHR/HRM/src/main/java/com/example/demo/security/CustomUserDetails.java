@@ -21,11 +21,13 @@ public class CustomUserDetails implements UserDetails {
     private String password;
     private boolean isEnabled;
     private String fullName;
+    private String avatar;
     private List<GrantedAuthority> authorities;
 
     public CustomUserDetails(User user) {
         this.userName = user.getEmail();
         this.fullName = user.getFirstName()+' '+user.getLastName();
+        this.avatar = user.getAvatar();
         this.password = user.getPassword();
         this.isEnabled = user.getIsActived();
         this.authorities =

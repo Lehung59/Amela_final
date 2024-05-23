@@ -1,5 +1,6 @@
 package com.example.demo.service.implement;
 
+import com.example.demo.constant.Constants;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.Token;
 import com.example.demo.entity.User;
@@ -10,10 +11,12 @@ import com.example.demo.security.CustomUserDetails;
 import com.example.demo.service.TokenService;
 import com.example.demo.service.UserService;
 import com.example.demo.utils.DateUtils;
+import com.example.demo.utils.ImageUpload;
 import com.example.demo.utils.MailUtils;
 import com.example.demo.utils.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -48,7 +51,7 @@ public class UserServiceImpl implements UserService {
     private final MailUtils mailUtils;
 
     private final ThreadPoolTaskScheduler taskScheduler;
-
+    private final ImageUpload imageUpload;
 
 
 //    @Override
@@ -57,19 +60,19 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    public void updateUser(UserForm userForm, int id) {
+    public void updateUser(UserForm userForm) throws Exception {
 
-
+        int id = userForm.getId();
         User newUser = convertToUser(userForm);
         User exUser = userRepo.findById(id).get();
-
+        String avt = imageUpload.upload(userForm.getAvatarFile());
         boolean changeMail = !newUser.getEmail().equals(exUser.getEmail());
         exUser.setLastName(newUser.getLastName());
         exUser.setFirstName(newUser.getFirstName());
         exUser.setPhoneNumber(newUser.getPhoneNumber());
         exUser.setIsActived(newUser.getIsActived());
         exUser.setAddress(newUser.getAddress());
-        exUser.setAvatar(newUser.getAvatar());
+        exUser.setAvatar(avt);
         exUser.setBirthday(newUser.getBirthday());
         exUser.setUpdatedAt(DateUtils.getCurrentDay());
         exUser.setMale(newUser.isMale());
@@ -116,7 +119,7 @@ public class UserServiceImpl implements UserService {
         newObj.setFirstName(user.getFirstName());
         newObj.setPhoneNumber(user.getPhoneNumber());
         newObj.setAddress(user.getAddress());
-        newObj.setAvatar(user.getAvatar());
+        newObj.setAvatar(Constants.DEFAULT_AVATAR);
         newObj.setBirthday(user.getBirthday());
         newObj.setRole(Role.EMPLOYEE);
         newObj.setIsActived(false);

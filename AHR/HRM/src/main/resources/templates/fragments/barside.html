@@ -315,7 +315,7 @@
             </ul>
         </div>
         <div sec:authorize="hasAuthority('EMPLOYEE')" class="sidebar_profile flex" onclick="redirectToEditPage()">          <span class="nav_image">
-            <img src="images/logo.jpg" alt="logo_img" />
+        <img th:src="${#authentication.principal.avatar}" alt="logo_img" />
           </span>
             <div class="data_text">
                 <span sec:authentication="principal.fullName" class="name"></span>

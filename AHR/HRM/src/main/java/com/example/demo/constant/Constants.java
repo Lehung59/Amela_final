@@ -5,6 +5,10 @@ import java.time.LocalTime;
 
 public class Constants {
 
+    //avt
+    public static final String DEFAULT_AVATAR = "https://res.cloudinary.com/dqvr7kat6/image/upload/v1716485533/hehavockucnje7csqr30.png";
+
+
     //dung gio
     public static final LocalTime TIME_START_WORK = LocalTime.of(8, 0, 0);
     public static final LocalTime TIME_LUNCH = LocalTime.of(12, 0);

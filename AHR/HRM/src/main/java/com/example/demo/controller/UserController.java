@@ -26,8 +26,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.example.demo.service.implement.UserServiceImpl.convertToUserForm;
 
@@ -218,14 +220,15 @@ public class UserController {
     public String employeeEditProfile(
             @Valid @ModelAttribute("userForm") UserForm userForm,
             BindingResult bindingResult,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) throws Exception {
         if (bindingResult.hasErrors()) {
-            return "user_info_view";
+            redirectAttributes.addFlashAttribute(Constants.ERROR, "There were errors in your form submission. Please correct them and try again.");
+            return "redirect:/user/info/edit";
         }
         int userId = userService.getUserByEmail(userForm.getEmail()).get().getId();
         userForm.setId(userId);
         userForm.setActive(true);
-        userService.updateUser(userForm, userId);
+        userService.updateUser(userForm);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Đổi thông tin thành công");
         return "redirect:/users";
     }
@@ -293,7 +296,7 @@ public class UserController {
     public String updateUser(@PathVariable int id,
                              @Valid @ModelAttribute("userForm") UserForm userForm,
                              BindingResult bindingResult,
-                             RedirectAttributes redirectAttributes) {
+                             RedirectAttributes redirectAttributes) throws Exception {
         if (bindingResult.hasErrors()) {
             redirectAttributes.addFlashAttribute(Constants.ERROR, "Đã có lỗi xảy ra");
             return "redirect:/admin/user/edit/" + id;
@@ -306,7 +309,7 @@ public class UserController {
             redirectAttributes.addFlashAttribute("role", "admin");
             return "redirect:/admin/user/edit/" + id;
         }
-        userService.updateUser(userForm, id);
+        userService.updateUser(userForm);
         redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Đổi thông tin thành công");
         return "redirect:/users";
     }

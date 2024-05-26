@@ -1,10 +1,13 @@
 package com.example.demo.service.implement;
 
 import com.example.demo.constant.Constants;
+import com.example.demo.entity.Mail;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.Token;
 import com.example.demo.entity.User;
 import com.example.demo.form.UserForm;
+import com.example.demo.repository.AttendanceRepo;
+import com.example.demo.repository.MailRepo;
 import com.example.demo.repository.TokenRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.security.CustomUserDetails;
@@ -49,9 +52,11 @@ public class UserServiceImpl implements UserService {
     private final TemplateEngine templateEngine;
     private final ResourceLoader resourceLoader;
     private final MailUtils mailUtils;
-
     private final ThreadPoolTaskScheduler taskScheduler;
     private final ImageUpload imageUpload;
+    private  final MailRepo mailRepo;
+    private final AttendanceRepo attendanceRepo;
+
 
 
 //    @Override
@@ -60,19 +65,23 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
+    @Transactional
     public void updateUser(UserForm userForm) throws Exception {
 
         int id = userForm.getId();
         User newUser = convertToUser(userForm);
         User exUser = userRepo.findById(id).get();
-        String avt = imageUpload.upload(userForm.getAvatarFile());
+        if(userForm.getAvatarFile().getName().isEmpty())   {
+            String avt = imageUpload.upload(userForm.getAvatarFile());
+            exUser.setAvatar(avt);
+
+        }
         boolean changeMail = !newUser.getEmail().equals(exUser.getEmail());
         exUser.setLastName(newUser.getLastName());
         exUser.setFirstName(newUser.getFirstName());
         exUser.setPhoneNumber(newUser.getPhoneNumber());
         exUser.setIsActived(newUser.getIsActived());
         exUser.setAddress(newUser.getAddress());
-        exUser.setAvatar(avt);
         exUser.setBirthday(newUser.getBirthday());
         exUser.setUpdatedAt(DateUtils.getCurrentDay());
         exUser.setMale(newUser.isMale());
@@ -106,6 +115,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void save(UserForm userForm) {
 
 //        String activeCode = UUID.randomUUID().toString().substring(0,10).toUpperCase();
@@ -154,6 +164,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void saveUser(User user) {
         userRepo.save(user);
     }
@@ -162,12 +173,23 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUserById(int id) {
         User user = userRepo.findById(id).get();
+        attendanceRepo.deleteAll(user.getAttendances());  // Assuming you have an attendanceRepository
+        tokenRepo.deleteAll(user.getTokens());            // Assuming you have a tokenRepository
+
+        // For Mails, since it's a many-to-many relationship, adjust the relationship before deleting
+        for (Mail mail : user.getMails()) {
+            mail.getUsers().remove(user);
+            mailRepo.save(mail);  // Assuming you have a mailRepository
+        }
+        user.getMails().clear();
+
         userRepo.delete(user);
     }
 
     @Override
     public User getUserById(int id) {
-        return userRepo.findById(id).get();
+        return userRepo.findById(id).orElseThrow(()->new RuntimeException("User not found"));
+
     }
 
 
@@ -198,6 +220,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
+    @Transactional
     public void changePassword(int id, String newPassword) throws Exception {
         User user = userRepo.findById(id).get();
         if(!user.getEmail().equals(userUtils.getUserName())){
@@ -254,6 +277,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void saveNewPassword(int id, String newPass) {
         User user = userRepo.findById(id).get();
         user.setPassword(passwordEncoder.encode(newPass));

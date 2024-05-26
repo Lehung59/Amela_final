@@ -16,6 +16,8 @@ import com.example.demo.utils.UserUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -26,9 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.demo.service.implement.UserServiceImpl.convertToUserForm;
@@ -85,13 +85,24 @@ public class UserController {
     public String saveEmployee(@Valid @ModelAttribute("user") UserForm userForm,
                                BindingResult bindingResult,
                                RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            return "redirect:/admin/insert?error";
+        try{
+            if (bindingResult.hasErrors()) {
+                Map<String, String> errors= new HashMap<>();
+
+                bindingResult.getFieldErrors().forEach(
+                        error -> errors.put(error.getField(), error.getDefaultMessage())
+                );
+                redirectAttributes.addFlashAttribute(Constants.ERROR, errors.values());
+                return "redirect:/admin/insert?error";
+            }
+            userService.save(userForm);
+            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Successfully added user");
+            return "redirect:/users";
+        }catch (Exception e){
+            redirectAttributes.addFlashAttribute(Constants.ERROR, e.getMessage());
+            return "redirect:/admin/insert";
         }
 
-        userService.save(userForm);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Da them thanh cong");
-        return "redirect:/users";
 
     }
 
@@ -132,26 +143,6 @@ public class UserController {
                         redirectAttributes.addFlashAttribute(Constants.SUCCESS, Constants.VALID_MESS);
                         return "redirect:/login?valid";
                 }
-//
-//                if (newUser.getCodeExpried().before(DateUtils.getCurrentDay())) {
-//                    redirectAttributes.addFlashAttribute("mess", "Mã kích hoạt đã hết hạn");
-//                    return "redirect:/login?errors=time";
-//                }
-//                if (!newUser.getActiveCode().equals(activeCode)) {
-//                    redirectAttributes.addFlashAttribute("mess", "Mã kích hoạt không chính xác");
-//                    return "redirect:/login?errors=code";
-//                }
-//                if (newUser.getIsActived()) {
-//                    redirectAttributes.addFlashAttribute("mess", "Tài khoản của bạn đã được kích hoạt trước đó");
-//                    return "redirect:/login?verified";
-//                }
-//                if (newUser.getCodeExpried().after(DateUtils.getCurrentDay()) && newUser.getActiveCode().equals(activeCode)) {
-//                    newUser.setIsActived(true);
-//                    newUser.setActiveCode(newActiveCode);
-//                    userService.saveUser(newUser);
-//                    redirectAttributes.addFlashAttribute("mess", "Kích hoạt thành công");
-//                    return "redirect:/login?valid";
-//                }
             }
             return "redirect:/login";
         } catch (Exception e) {
@@ -166,7 +157,7 @@ public class UserController {
     public String reSendCode(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
             userService.reSendCode(id);
-            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Gửi mã thành công");
+            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Code sent successfully");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute(Constants.ERROR, e.getMessage());
         }
@@ -174,25 +165,34 @@ public class UserController {
     }
 
 
-    @GetMapping("/admin/delete/{id}")
-    public String deleteEmployee(@PathVariable int id, RedirectAttributes redirectAttributes) {
+    @DeleteMapping("/admin/delete/{id}")
+    public ResponseEntity<?> deleteEmployee(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {
             userService.deleteUserById(id);
-            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Đã xóa thành công");
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
 
         }
-        return "redirect:/users";
     }
+//    @GetMapping("/admin/delete/re")
+//    public String deleteEmployee(RedirectAttributes redirectAttributes) {
+//        redirectAttributes.addFlashAttribute(Constants.SUCCESS,"Xoá thành công người dùng");
+//        return "redirect:/admin/users";
+//    }
 
-    @GetMapping("/user/view")
-    public String viewEmployee(Model model) {
-        int id = userUtils.getUserNow().getId();
-        model.addAttribute("user", userService.getUserById(id));
-//        model.addAttribute("role","admin");
-        return "admin_user_view";
+    @GetMapping("/user/view/{id}")
+    public String viewEmployee(@PathVariable int id, Model model, RedirectAttributes redirectAttributes) {
+//        int id = userUtils.getUserNow().getId();
+        try {
+            model.addAttribute("user", userService.getUserById(id));
+            return "admin_user_view";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute(Constants.ERROR, e.getMessage());
+            return "redirect:/users";
+        }
     }
+//        model.addAttribute("role","admin");
 
 
     @GetMapping("/user/info/view")
@@ -205,14 +205,18 @@ public class UserController {
     }
 
     @GetMapping("/user/info/edit")
-    public String employeeEditProfile(Model model,
-                                      @ModelAttribute("error") String error) {
+    public String employeeEditProfile(Model model, RedirectAttributes redirectAttributes) {
+        try{
+            String email = userUtils.getUserName();
+            UserForm userform = userService.getUserFormByEmail(email);
+            model.addAttribute("userForm",userform );
+            model.addAttribute("id", userService.getUserByEmail(email).get().getId());
+            return "user_info_edit";
+        }catch (Exception e){
+            redirectAttributes.addFlashAttribute(Constants.ERROR, e.getMessage());
+            return "redirect:/user/info/view";
+        }
 
-        String email = userUtils.getUserName();
-        UserForm userform = userService.getUserFormByEmail(email);
-        model.addAttribute("userForm",userform );
-        model.addAttribute("id", userService.getUserByEmail(email).get().getId());
-        return "user_info_edit";
 
     }
 
@@ -221,16 +225,26 @@ public class UserController {
             @Valid @ModelAttribute("userForm") UserForm userForm,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes) throws Exception {
-        if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "There were errors in your form submission. Please correct them and try again.");
+        try{
+            if (bindingResult.hasErrors()) {
+                Map<String, String> errors= new HashMap<>();
+
+                bindingResult.getFieldErrors().forEach(
+                        error -> errors.put(error.getField(), error.getDefaultMessage())
+                );
+                redirectAttributes.addFlashAttribute(Constants.ERROR, errors.values());
+                return "redirect:/user/info/edit";
+            }
+            int userId = userService.getUserByEmail(userForm.getEmail()).get().getId();
+            userForm.setId(userId);
+            userForm.setActive(true);
+            userService.updateUser(userForm);
+            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Changed information successfully");
+            return "redirect:/users";
+        }catch (Exception e){
+            redirectAttributes.addFlashAttribute(Constants.ERROR,e.getMessage());
             return "redirect:/user/info/edit";
         }
-        int userId = userService.getUserByEmail(userForm.getEmail()).get().getId();
-        userForm.setId(userId);
-        userForm.setActive(true);
-        userService.updateUser(userForm);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Đổi thông tin thành công");
-        return "redirect:/users";
     }
 
     @GetMapping("/user/forgetpassword")
@@ -245,11 +259,11 @@ public class UserController {
         Optional<User> userOptional = userService.getUserByEmail(email);
         redirectAttributes.addFlashAttribute("email",email);
         if(userOptional.isEmpty()) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR,"Khong ton tai email nay");
+            redirectAttributes.addFlashAttribute(Constants.ERROR,"Not available at this email");
         } else {
             User user = userOptional.get();
             userService.forgetPassword(user, email);
-            redirectAttributes.addFlashAttribute(Constants.SUCCESS,"Da gui mail");
+            redirectAttributes.addFlashAttribute(Constants.SUCCESS,"Email sent!");
 
         }
         return "redirect:/user/forgetpassword";
@@ -260,7 +274,7 @@ public class UserController {
                                               Model model){
         Optional<Token> tokenPasswordOptional = tokenService.findByToken(token, Token.TokenType.PASSWORD);
         if(tokenPasswordOptional.isEmpty()){
-            redirectAttributes.addFlashAttribute(Constants.ERROR,"Mã không chính xác hoặc đã hết hạn");
+            redirectAttributes.addFlashAttribute(Constants.ERROR,"The code is incorrect or has expired");
             return "redirect:/user/forgetpassword";
 
         } else {
@@ -276,7 +290,7 @@ public class UserController {
                                               @RequestParam String newPass,
                                               RedirectAttributes redirectAttributes){
         userService.saveNewPassword(id,newPass);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS,"Doi mat khau thanh cong");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS,"Password changed successfully");
         return "redirect:/login";
     }
 
@@ -298,19 +312,25 @@ public class UserController {
                              BindingResult bindingResult,
                              RedirectAttributes redirectAttributes) throws Exception {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Đã có lỗi xảy ra");
+            Map<String, String> errors= new HashMap<>();
+
+            bindingResult.getFieldErrors().forEach(
+                    error -> errors.put(error.getField(), error.getDefaultMessage())
+            );
+            redirectAttributes.addFlashAttribute(Constants.ERROR, errors.values());
+
             return "redirect:/admin/user/edit/" + id;
         }
         // get student from database by id
         userForm.setId(id);
         if (userService.getUserByEmail(userForm.getEmail()).isPresent() && !userForm.getEmail().equals(userService.getUserById(id).getEmail())) {
             redirectAttributes.addFlashAttribute("user", userForm);
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Email này đã tồn tại");
+            redirectAttributes.addFlashAttribute(Constants.ERROR, "This email already exists");
             redirectAttributes.addFlashAttribute("role", "admin");
             return "redirect:/admin/user/edit/" + id;
         }
         userService.updateUser(userForm);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Đổi thông tin thành công");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Changed information successfully");
         return "redirect:/users";
     }
 
@@ -333,11 +353,11 @@ public class UserController {
             if (!userService.checkOldPassword(id, changePasswordForm.getOldPassword())) {
                 model.addAttribute("changePasswordForm", changePasswordForm);
                 model.addAttribute("id", id);
-                model.addAttribute("errorSamepass", "Password cũ không đúng");
+                model.addAttribute("errorSamepass", "The old password is incorrect");
                 return "user_edit_password";
             }
             userService.changePassword(id, changePasswordForm.getNewPassword());
-            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Đổi mật khẩu thành công");
+            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Password changed successfully");
             return "redirect:/users";
         }catch (Exception ex){
             redirectAttributes.addFlashAttribute(Constants.ERROR, ex);

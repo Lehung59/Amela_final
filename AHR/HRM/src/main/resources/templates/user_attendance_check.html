@@ -48,12 +48,12 @@
                 <div class="d-flex mb-1">
                     <div class="col-auto m-lg-1">
                         <select class="form-select" id="sel1" th:field="*{month}"  name="month" >
-                            <option th:each="index : ${#numbers.sequence(1, 12)}" th:value="${index}" th:text="${'Tháng ' + index}"></option>
+                            <option th:each="index : ${#numbers.sequence(1, 12)}" th:value="${index}" th:text="${'Month ' + index}"></option>
                         </select>
                     </div>
                     <div class="col-auto m-lg-1">
                         <select class="form-select" id="sel2" th:field="*{year}"  name="year" >
-                            <option th:each="index : ${#numbers.sequence(2024, 2019)}" th:value="${index}" th:text="${'Năm ' + index}"></option>
+                            <option th:each="index : ${#numbers.sequence(2024, 2019)}" th:value="${index}" th:text="${'Year ' + index}"></option>
                         </select>
                     </div>
                     <div class="col-auto m-lg-1">
@@ -106,30 +106,6 @@
     <div th:replace="~{fragments/paging :: pagination('/user/attendanceCheck')}"></div>
 
 </div>
-
-
-<!--<div class="container">-->
-
-
-<!--    <div class="row mt-5 mb-5 p-2" style="background-color: #dea8059c;">-->
-<!--        <h1 class="mt-5 mb-5" style="color: black;">Attendance List</h1>-->
-<!--        <div class="d-flex justify-content-between">-->
-<!--            <div >-->
-<!--                <div>-->
-<!--                    <span>Hôm nay bạn đã checkin lúc <b th:text="${attendanceNow.timeCheckIn}"></b></span>-->
-<!--                </div>-->
-<!--                <div>-->
-<!--                    <span>Hôm nay bạn đã checkout lúc <b th:text="${attendanceNow.timeCheckOut}"></b> </span>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--                <a th:href="@{/user/checkout}" class="btn btn-primary btn-lg" style=" background-color: rgba(225,37,37,0.7)">CHECKOUT</a>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-
-
-<!--</div>-->
 
 
 </body>

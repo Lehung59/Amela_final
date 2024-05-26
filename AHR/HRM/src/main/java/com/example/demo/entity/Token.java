@@ -28,7 +28,7 @@ public class Token {
     private boolean isRevoked;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "token_type", length = 255)  // Đảm bảo độ dài của cột đủ lớn
+    @Column(name = "token_type", length = 255)
     private TokenType tokenType;
 
 

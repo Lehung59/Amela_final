@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface UserService {
-//    List<User> getAllUser();
 
     void save(UserForm userForm);
 

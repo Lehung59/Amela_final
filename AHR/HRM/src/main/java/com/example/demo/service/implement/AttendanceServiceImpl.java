@@ -1,6 +1,5 @@
 package com.example.demo.service.implement;
 
-import com.example.demo.exception.AttendanceNotFoundException;
 import com.example.demo.entity.Attendance;
 import com.example.demo.entity.User;
 import com.example.demo.form.AttendanceForm;
@@ -9,6 +8,7 @@ import com.example.demo.repository.AttendanceRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.service.AttendanceService;
 import com.example.demo.utils.DateUtils;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -43,18 +43,20 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public Attendance getAttendanceById(int id) {
+    public Attendance getAttendanceById(int id) throws Exception {
         Optional<Attendance> attendance = attendanceRepo.findById(id);
         if(attendance.isEmpty()) {
-            throw new AttendanceNotFoundException("Attendance not found with ID: " + id);
+            throw new Exception("Attendance not found with ID: " + id);
 
         }
         return attendance.get();
     }
 
     @Override
-    public void saveAttendance(Attendance attendance)
-    {
+    @Transactional
+    public void saveAttendance(AttendanceForm attendanceForm) throws Exception {
+        Attendance attendance = mapFormToEntity(attendanceForm);
+        if(attendance.getDateCheck()==null) throw new Exception("Thiếu ngày chấm công");
         LocalDate checkDate = attendance.getDateCheck();
         String email = attendance.getUser().getEmail();
         User user = userRepo.findByEmail(email).get();
@@ -85,6 +87,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
+    @Transactional
     public void updateAttendance(AttendanceForm attendanceForm) {
         Attendance attendance = mapFormToEntity(attendanceForm);
         Attendance oldObj = attendanceRepo.findById(attendance.getId()).get();
@@ -119,16 +122,18 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public void deleteAttendance(int id) {
+    @Transactional
+    public void deleteAttendance(int id) throws Exception {
         Optional<Attendance> attendance = attendanceRepo.findById(id);
         if(attendance.isEmpty()) {
-            throw new AttendanceNotFoundException("Attendance not found with ID: " + id);
+            throw new Exception("Attendance not found with ID: " + id);
 
         }
         attendanceRepo.deleteById(id);
     }
 
     @Override
+    @Transactional
     public AttendanceForm setCheckIn(int id) {
         LocalDate date = LocalDate.now();
         LocalTime time = LocalTime.now().withSecond(0).withNano(0); ;

@@ -25,19 +25,8 @@ public class CheckController {
     }
     @GetMapping("/check/user/phone")
     public String checkUserPhone(@RequestParam String phone){
-//        String oldPhone = userService.getUserByEmail(email).get().getPhoneNumber();
-//        if(phone.equals(oldPhone)) return "OK";
-
-
-
         return userService.getUserByPhone(phone).isEmpty()?"OK":"TRUNG";
     }
 
-//    @GetMapping("/admin/attendances/test")
-//    public int testAttendance(@RequestParam(defaultValue = "2024-05-23") LocalDate from,
-//                                           @RequestParam(defaultValue = "2024-05-03") LocalDate to){
-//        LocalDate nStart = DateUtils.getFirstDayOfMonth(2024,5);
-//        LocalDate nEnd = DateUtils.getLastDayOfMonth(2024,5);
-//        return attendanceRepo.findAllAttendanceNoKeyword(nStart, nEnd).size();
-//    }
+
 }

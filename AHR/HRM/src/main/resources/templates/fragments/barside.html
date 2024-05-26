@@ -245,7 +245,7 @@
     </div>
     <div class="menu_container">
         <div class="menu_items">
-            <ul sec:authorize="hasAuthority('EMPLOYEE')"  class="menu_item">
+            <ul sec:authorize="hasAuthority('ROLE_EMPLOYEE')"  class="menu_item">
                 <div class="menu_title flex">
                     <span class="fa-solid fa-house"></span>
                     <span class="title">HomePage</span>
@@ -275,7 +275,7 @@
                     </a>
                 </li>
             </ul>
-            <ul sec:authorize="hasAuthority('ADMIN')" class="menu_item">
+            <ul sec:authorize="hasAuthority('ROLE_ADMIN')" class="menu_item">
 
                 <div class="menu_title flex">
                     <span class="fa-solid fa-clipboard-user"></span>
@@ -288,7 +288,7 @@
                     </a>
                 </li>
             </ul>
-            <ul sec:authorize="hasAuthority('EMPLOYEE')" class="menu_item">
+            <ul sec:authorize="hasAuthority('ROLE_EMPLOYEE')" class="menu_item">
 
                 <div class="menu_title flex">
                     <span class="fa-solid fa-clipboard-user"></span>
@@ -301,7 +301,7 @@
                     </a>
                 </li>
             </ul>
-            <ul sec:authorize="hasAuthority('ADMIN')" class="menu_item">
+            <ul sec:authorize="hasAuthority('ROLE_ADMIN')" class="menu_item">
                 <div class="menu_title flex">
                     <span class="fa-solid fa-envelope"></span>
                     <span class="title">Mail</span>
@@ -314,7 +314,7 @@
                 </li>
             </ul>
         </div>
-        <div sec:authorize="hasAuthority('EMPLOYEE')" class="sidebar_profile flex" onclick="redirectToEditPage()">          <span class="nav_image">
+        <div sec:authorize="hasAuthority('ROLE_EMPLOYEE')" class="sidebar_profile flex" onclick="redirectToEditPage()">          <span class="nav_image">
         <img th:src="${#authentication.principal.avatar}" alt="logo_img" />
           </span>
             <div class="data_text">
@@ -392,7 +392,7 @@
     sidebarLockBtn.addEventListener("click", toggleLock);
     sidebar.addEventListener("mouseleave", hideSidebar);
     sidebar.addEventListener("mouseenter", showSidebar);
-    sidebarOpenBtn.addEventListener("click", toggleSidebar);
+    // sidebarOpenBtn.addEventListener("click", toggleSidebar);
     sidebarCloseBtn.addEventListener("click", toggleSidebar);
 
 

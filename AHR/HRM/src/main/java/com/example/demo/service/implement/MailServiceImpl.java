@@ -9,6 +9,8 @@ import com.example.demo.repository.MailRepo;
 import com.example.demo.repository.UserRepo;
 import com.example.demo.utils.DateUtils;
 import com.example.demo.utils.MailUtils;
+import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -16,8 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -36,6 +37,28 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     private final Map<Integer, ScheduledFuture<?>> scheduledTasks = new HashMap<>();
 
 
+    @PostConstruct
+    public void scanMailToSend() {
+        try {
+            List<Mail> mails = mailRepo.findAll();
+            for (Mail mail : mails) {
+                if (mail.getStatus() == MailStatus.PENDING) {
+                    LocalDateTime timeSend = LocalDateTime.of(mail.getDateSend(), mail.getTimeSend());
+
+                    if (timeSend.isAfter(LocalDateTime.now())) {
+                        scheduleEmail(mail.getMailId());
+                    }
+                    mail.setStatus(MailStatus.FAILED);
+                    mailRepo.save(mail);
+                }
+            }
+            printTaskPool();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
     @Override
     public List<MailForm> getAllMail() {
         return mailRepo.findAll().stream()
@@ -49,11 +72,12 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         if (mail.isEmpty()) {
             throw new MailNotFoundException("Mail not found with ID: " + id);
         }
-        return convertToMailDto(mail.get()) ;
+        return convertToMailDto(mail.get());
     }
 
     @Override
-    public void  saveMail(MailForm mailForm) {
+    @Transactional
+    public void saveMail(MailForm mailForm) {
 
         Mail mail = convertToMail(mailForm);
         Mail newObj = new Mail();
@@ -71,7 +95,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         List<User> foundUsers = new ArrayList<>();
         for (String email : emailList) {
             Optional<User> userOptional = userRepo.findByEmail(email);
-            if(userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
+            if (userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
             userOptional.ifPresent(foundUsers::add);
         }
 //        newObj.getUsers().addAll(foundUsers);
@@ -89,13 +113,13 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         scheduleEmail(newObj.getMailId());
 
     }
+
     public void scheduleEmail(int id) {
 //        Instant instant = DateUtils.getCurrentDay().toInstant().plusSeconds(10);
 //        Date sendDate = Date.from(instant);
         Mail mail = mailRepo.findById(id).get();
 //        LocalDateTime dateTime = LocalDateTime.of(mail.getDateSend(),mail.getTimeSend());
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(mail.getDateSend(),mail.getTimeSend(), ZoneId.systemDefault());
-
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(mail.getDateSend(), mail.getTimeSend(), ZoneId.systemDefault());
 
 
         String recipientAddress = mail.getMailRecipient();
@@ -106,8 +130,10 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         scheduledTasks.put(id, future);
         printTaskPool();
     }
-    public void sendEmail(String recipientAddress, String subject, String message,int id) {
-        mailUtils.sendContent(recipientAddress,subject,message);
+
+    @Transactional
+    public void sendEmail(String recipientAddress, String subject, String message, int id) {
+        mailUtils.sendContent(recipientAddress, subject, message);
         Mail mail = mailRepo.findById(id).get();
         mail.setStatus(MailStatus.SENT);
         mailRepo.save(mail);
@@ -117,9 +143,8 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     }
 
 
-
-
     @Override
+    @Transactional
     public void updateMail(MailForm mailForm) {
         Mail mail = convertToMail(mailForm);
         int id = mailForm.getMailId();
@@ -132,7 +157,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         List<User> foundUsers = new ArrayList<>();
         for (String email : emailList) {
             Optional<User> userOptional = userRepo.findByEmail(email);
-            if(userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
+            if (userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
             userOptional.ifPresent(foundUsers::add);
         }
 
@@ -148,7 +173,7 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         oldMail.setMailRecipient(mail.getMailRecipient());
         oldMail.setContent(mail.getContent());
 
-        ZonedDateTime zonedDateTime = ZonedDateTime.of(mail.getDateSend(),mail.getTimeSend(), ZoneId.systemDefault());
+        ZonedDateTime zonedDateTime = ZonedDateTime.of(mail.getDateSend(), mail.getTimeSend(), ZoneId.systemDefault());
 
         ScheduledFuture<?> future = taskScheduler.schedule(() -> sendEmail(oldMail.getMailRecipient(), oldMail.getTitle(), oldMail.getContent(), id), zonedDateTime.toInstant());
         scheduledTasks.put(id, future);
@@ -165,12 +190,18 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     }
 
     @Override
+    @Transactional
     public void deleteMail(int id) {
-        Optional<Mail> oldObj = mailRepo.findById(id);
-        if (oldObj.isEmpty()) {
-            throw new MailNotFoundException("Mail not found with ID: " + id);
+        Mail mail = mailRepo.findById(id)
+                .orElseThrow(() -> new MailNotFoundException("Mail not found with ID: " + id));
+        List<User> users = new ArrayList<>(mail.getUsers()); // Make a copy to avoid ConcurrentModificationException
+        for (User user : users) {
+            user.getMails().remove(mail);
+            userRepo.save(user); // Save each user after removing the mail
         }
-        mailRepo.deleteById(id);
+        mailRepo.deleteAllUsersByMailId(id);
+        mailRepo.deleteByMailId(id);
+
     }
 
     @Override
@@ -195,48 +226,17 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         return new PageImpl<>(mailFormList, pageable, mailList.getTotalElements());
     }
 
-//    @Override
-//    public void draftMail(MailForm mailForm) {
-//        if (mailForm.getMailId() == -1) {
-//            Mail mail = new Mail();
-//            if (mailForm.getMailRecipient() != null) {
-//                mail.setMailRecipient(mailForm.getMailRecipient());
-//            } else mail.setMailRecipient("");
-//            mail.setTitle(mailForm.getTitle());
-//            mail.setContent(mailForm.getContent());
-//            mail.setStatus(MailStatus.DRAFT);
-//            mail.setCreatedAt(DateUtils.getCurrentDay());
-//            mail.setUpdatedAt(DateUtils.getCurrentDay());
-//            mail.setTimeSend(mailForm.getTimeSend());
-//            mail.setDateSend(mailForm.getDateSend());
-//
-//            mailRepo.save(mail);
-//        }
-//        if(mailForm.getMailId()!=-1) {
-//            Mail mail = mailRepo.findById(mailForm.getMailId()).get();
-//            cancelScheduledEmail(mailForm.getMailId());
-//            if (mailForm.getMailRecipient() != null) {
-//                mail.setMailRecipient(mailForm.getMailRecipient());
-//            } else mail.setMailRecipient("");
-//            mail.setTitle(mailForm.getTitle());
-//            mail.setContent(mailForm.getContent());
-//            mail.setStatus(MailStatus.DRAFT);
-//            mail.setTimeSend(mailForm.getTimeSend());
-//            mail.setDateSend(mailForm.getDateSend());
-//            mail.setUpdatedAt(DateUtils.getCurrentDay());
-//            mailRepo.save(mail);
-//
-//        }
-//    }
-
     @Override
     public Optional<Mail> checkExsist(Integer id) {
         return mailRepo.findById(id);
     }
 
     @Override
+    @Transactional
     public void draftNewMail(MailForm mailForm) {
         Mail mail = convertToMail(mailForm);
+        mail.setCreatedAt(DateUtils.getCurrentDay());
+        mail.setUpdatedAt(DateUtils.getCurrentDay());
         mailRepo.save(mail);
 
         printTaskPool();
@@ -244,11 +244,12 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
     }
 
     @Override
+    @Transactional
     public void draftExistMail(MailForm mailForm) {
         cancelScheduledEmail(mailForm.getMailId());
+        System.out.println(mailForm.getMailId());
         Mail oldMail = mailRepo.findById(mailForm.getMailId()).get();
         oldMail.setStatus(MailStatus.DRAFT);
-        oldMail.setCreatedAt(DateUtils.getCurrentDay());
 
         oldMail.setUpdatedAt(DateUtils.getCurrentDay());
         oldMail.setDateSend(mailForm.getDateSend());
@@ -257,23 +258,25 @@ public class MailServiceImpl implements com.example.demo.service.MailService {
         oldMail.setMailRecipient(mailForm.getMailRecipient());
         oldMail.setTimeSend(mailForm.getTimeSend());
 
-
-        String listMails = mailForm.getMailRecipient().replaceAll("\\s+", "");
-        List<String> emailList = Arrays.asList(listMails.split(","));
-        List<User> foundUsers = new ArrayList<>();
-        for (String email : emailList) {
-            Optional<User> userOptional = userRepo.findByEmail(email);
-            if(userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
-            userOptional.ifPresent(foundUsers::add);
+        if (!mailForm.getMailRecipient().isEmpty()) {
+            String listMails = mailForm.getMailRecipient().replaceAll("\\s+", "");
+            String[] emailList = listMails.split(",");
+            List<User> foundUsers = new ArrayList<>();
+            for (String email : emailList) {
+                Optional<User> userOptional = userRepo.findByEmail(email);
+                if (userOptional.isEmpty()) throw new MailNotFoundException("Mail not found:" + email);
+                userOptional.ifPresent(foundUsers::add);
+            }
+            oldMail.getUsers().clear();
+            oldMail.getUsers().addAll(foundUsers);
         }
 
-        oldMail.getUsers().clear();
 
-        oldMail.getUsers().addAll(foundUsers);
 
-        try{
-            Mail oll =  mailRepo.save(oldMail);
-        } catch (Exception e){
+
+        try {
+            Mail oll = mailRepo.save(oldMail);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
         Mail newMail = convertToMail(mailForm);

@@ -7,6 +7,7 @@ import com.example.demo.repository.TokenRepo;
 import com.example.demo.service.TokenService;
 import com.example.demo.service.TokenService;
 import com.example.demo.utils.DateUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +41,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    @Transactional
     public void revokeToken(Token token) {
 
         token.setRevoked(true);
@@ -47,6 +49,7 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
+    @Transactional
     public Token createToken(User user, Token.TokenType tokenType) {
         List<Token> list = tokenRepo.findByUserId(user.getId(), tokenType);
         if(!list.isEmpty()){

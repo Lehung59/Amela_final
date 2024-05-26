@@ -7,18 +7,6 @@
     <link rel="stylesheet" th:href="@{/css/insert_form.css}">
     <script th:src="@{/webjars/jquery/3.7.0/dist/jquery.min.js}"></script>
     <script th:src="@{/js/checkExistInput.js}"></script>
-<!--    <style>-->
-<!--        /* CSS for changing color when radio button is checked */-->
-<!--        .form-check-input:checked + .form-check-label::before {-->
-<!--            background-color: #eea738;-->
-<!--        }-->
-
-<!--        /* CSS for changing background color of submit button */-->
-<!--        .btn-primary {-->
-<!--            background-color: #eea738;-->
-<!--        }-->
-
-<!--    </style>-->
 </head>
 
 
@@ -27,95 +15,6 @@
 
 </header>
 
-<!--<script >-->
-
-<!--    var checkEmailURL = 'http://localhost:8080/check/user/email';-->
-<!--    var checkPhoneURL = 'http://localhost:8080/check/user/phone';-->
-
-
-<!--    async function validateEmail() {-->
-<!--        var emailInput = document.getElementById('emailAddress');-->
-<!--        var email = emailInput.value;-->
-<!--        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;-->
-<!--        var errorElement = document.getElementById('emailError');-->
-
-<!--        // Ki?m tra ??nh d?ng email-->
-<!--        if (!emailRegex.test(email)) {-->
-<!--            errorElement.innerText = 'Vui lòng nh?p ??a ch? email h?p l?.';-->
-<!--            emailInput.focus();-->
-<!--            return false; // Email không h?p l?-->
-<!--        }-->
-
-<!--        // Xóa l?i ??nh d?ng tr??c khi ki?m tra tính duy nh?t-->
-<!--        errorElement.innerText = '';-->
-
-<!--        // Ki?m tra tính duy nh?t c?a email-->
-<!--        var dataEmail = {email: email};-->
-<!--        var isUnique = await checkUnique(checkEmailURL, dataEmail, errorElement, `Email ${email} ?ã t?n t?i.`);-->
-
-<!--        return isUnique;-->
-<!--    }-->
-
-
-<!--    async function validatePhone() {-->
-<!--        console.log("Starting validatePhone function");-->
-
-<!--        // Getting the phone number input element and value-->
-<!--        var phoneInput = document.getElementById('phoneNumber');-->
-<!--        var phone = phoneInput.value;-->
-<!--        var phoneRegex = /^[0-9]+$/; // Adjust regex to fit your phone number format-->
-<!--        var errorElement = document.getElementById('phoneError');-->
-
-<!--        // Validate phone number format using a regex pattern-->
-<!--        if (!phoneRegex.test(phone) || phone.length !== 10) {-->
-<!--            errorElement.innerText = 'Vui lòng nh?p s? ?i?n tho?i h?p l? (10 ch? s?).';-->
-<!--            phoneInput.focus();-->
-<!--            return false; // Invalid phone number format or length-->
-<!--        }-->
-
-<!--        // Clear format errors before checking for uniqueness-->
-<!--        errorElement.innerText = '';-->
-
-<!--        // Check the uniqueness of the phone number-->
-<!--        var dataPhone = { phone: phone };-->
-<!--        var isUnique = await checkUnique(checkPhoneURL, dataPhone, errorElement, `S? ?i?n tho?i ?ã t?n t?i.`);-->
-
-<!--        return isUnique; // Return true if the phone is valid and unique, otherwise false-->
-<!--    }-->
-<!--    function checkUnique(url, data, errorElement, message) {-->
-<!--        console.log("Starting checkUnique function");-->
-<!--        console.log("URL:", url);-->
-<!--        console.log("Data to be sent:", data);-->
-
-<!--        return new Promise(function (resolve, reject) {-->
-<!--            $.ajax({-->
-<!--                url: url,-->
-<!--                type: "GET",-->
-<!--                data: data,-->
-<!--                success: function (response) {-->
-<!--                    console.log("Received response from server:", response);-->
-
-<!--                    if (response === "TRUNG") {-->
-<!--                        console.log("Response indicates duplicate found.");-->
-<!--                        errorElement.innerText = message; // Set the error message-->
-<!--                        resolve(false); // Indicate the item is not unique-->
-<!--                    } else {-->
-<!--                        console.log("Response indicates no duplicate found.");-->
-<!--                        errorElement.innerText = ''; // Clear any error message-->
-<!--                        resolve(true); // Indicate the item is unique-->
-<!--                    }-->
-<!--                },-->
-<!--                error: function (ex) {-->
-<!--                    console.error("Error during AJAX request:", ex);-->
-<!--                    alert("Không th? k?t n?i ??n máy ch?.");-->
-<!--                    reject(ex); // Indicate failure of the API call-->
-<!--                }-->
-<!--            });-->
-<!--        });-->
-<!--    }-->
-
-
-<!--</script>-->
 <section class="">
     <div class="container py-5 h-100">
         <div class="row justify-content-center align-items-center h-100">
@@ -240,8 +139,6 @@
                                 <div class="col-md-6 mb-4 pb-2">
                                     <a class="btn btn-primary btn-lg" th:href="@{/users}">Back</a>
                                 </div>
-                                <!-- Tr??ng input ?n ?? l?u giá tr? -->
-<!--                                <input type="hidden" id="active" name="active" value="${active}" />-->
                                 <div class="col-md-6 mb-4 pb-2 pt-1 d-flex align-content-center">
                                     <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
                                            id="submitButton" type="submit" value="Submit" style="background-color: #eea738"/>
@@ -279,19 +176,16 @@
 
         // T?o thông báo d?a trên tr?ng thái
         const message = isChecked ?
-        "b?n mu?n kích ho?t toàn kho?n này?" :
-        "b?n mu?n ng?ng kích ho?t toàn kho?n này?";
+        "Do you want to activate this account?" :
+        "Do you want to deactivate this account?";
 
-        // Hi?n th? thông báo và ki?m tra s? ??ng ý
         const confirmed = confirm(message);
 
         if (!confirmed) {
-        // Hoàn tác l?i tr?ng thái checkbox n?u ng??i dùng không ??ng ý
         checkbox.checked = !isChecked;
         return;
     }
 
-        // C?p nh?t giá tr? c?a input ?n 'active'
         document.getElementById("active").value = isChecked;
     }
 </script>

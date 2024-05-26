@@ -27,7 +27,7 @@
 
         // Kiểm tra định dạng email
         if (!emailRegex.test(email)) {
-            errorElement.innerText = 'Vui lòng nhập địa chỉ email hợp lệ.';
+            errorElement.innerText = 'Please enter a valid email address.';
             emailInput.focus();
             return false; // Email không hợp lệ
         }
@@ -39,7 +39,7 @@
         var dataEmail = {email: email};
         var isUnique = await checkUnique(checkEmailURL, dataEmail, errorElement, `Email ${email} đã tồn tại.`);
 
-        return isUnique; // Trả về true nếu email hợp lệ và duy nhất, ngược lại trả về false
+        return isUnique;
     }
 
 
@@ -54,7 +54,7 @@
 
         // Validate phone number format using a regex pattern
         if (!phoneRegex.test(phone) || phone.length !== 10) {
-            errorElement.innerText = 'Vui lòng nhập số điện thoại hợp lệ (10 chữ số).';
+            errorElement.innerText = 'Please enter a valid phone number (10 digits).';
             phoneInput.focus();
             return false; // Invalid phone number format or length
         }
@@ -64,7 +64,7 @@
 
         // Check the uniqueness of the phone number
         var dataPhone = { phone: phone };
-        var isUnique = await checkUnique(checkPhoneURL, dataPhone, errorElement, `Số điện thoại đã tồn tại.`);
+        var isUnique = await checkUnique(checkPhoneURL, dataPhone, errorElement, `Phone number already exists.`);
 
         return isUnique; // Return true if the phone is valid and unique, otherwise false
     }
@@ -93,7 +93,7 @@
                 },
                 error: function (ex) {
                     console.error("Error during AJAX request:", ex);
-                    alert("Không thể kết nối đến máy chủ.");
+                    alert("Can not connect to server.");
                     reject(ex); // Indicate failure of the API call
                 }
             });
@@ -226,80 +226,3 @@
 
 </body>
 </html>
-
-<!-- Add this in the <head> or before your script tags -->
-
-
-<!--<script>-->
-<!--    var checkEmailURL = 'http://localhost:8080/check/user/email';-->
-<!--    var checkPhoneURL = 'http://localhost:8080/check/user/phone';-->
-
-<!--    $(document).ready(function () {-->
-<!--        var emailPromise;-->
-<!--        var phonePromise;-->
-
-<!--        // Kiểm tra email-->
-<!--        $("#emailAddress").on("blur", async function (e) {-->
-<!--            if (e.target.value.trim().length > 0) {-->
-<!--                var userEmail = $("#emailAddress").val();-->
-<!--                var dataEmail = {-->
-<!--                    email: userEmail-->
-<!--                };-->
-
-<!--                emailPromise = await checkUnique(checkEmailURL, dataEmail, "#emailError", `Email ${userEmail} đã tồn tại.`);-->
-<!--            }-->
-<!--        });-->
-
-<!--        // Kiểm tra số điện thoại-->
-<!--        $("#phoneNumber").on("blur", async function (e) {-->
-<!--            if (e.target.value.trim().length > 0) {-->
-<!--                var userPhone = $("#phoneNumber").val();-->
-<!--                var dataPhone = {-->
-<!--                    phone: userPhone-->
-<!--                };-->
-<!--                phonePromise = await checkUnique(checkPhoneURL, dataPhone, "#phoneError", `Số điện thoại ${userPhone} đã tồn tại.`);-->
-<!--            }-->
-<!--        });-->
-
-<!--        // Khi submit form, kiểm tra email và số điện thoại trước-->
-<!--        $("form").submit(async function (e) {-->
-<!--            e.preventDefault(); // Ngăn chặn hành vi mặc định của form-->
-
-<!--            Promise.all([emailPromise, phonePromise]).then(function (results) {-->
-<!--                var emailUnique = results[0];-->
-<!--                var phoneUnique = results[1];-->
-
-<!--                if (emailUnique !== false && phoneUnique !== false) {-->
-<!--                    e.target.submit(); // Chỉ submit nếu cả email và số điện thoại đều hợp lệ-->
-<!--                }-->
-<!--            }).catch(function (error) {-->
-<!--                console.error("Lỗi kiểm tra email/số điện thoại:", error);-->
-<!--            });-->
-<!--        });-->
-
-<!--        // Hàm kiểm tra tính duy nhất-->
-<!--        function checkUnique(url, data, tagName, message) {-->
-<!--            return new Promise(function (resolve, reject) {-->
-<!--                $.ajax({-->
-<!--                    url: url,-->
-<!--                    type: "GET",-->
-<!--                    data: data,-->
-<!--                    success: function (response) {-->
-<!--                        if (response === "TRUNG") {-->
-<!--                            $(tagName).html(message); // Hiển thị lỗi-->
-<!--                            resolve(false);-->
-<!--                        } else {-->
-<!--                            $(tagName).html(""); // Xóa lỗi nếu không có trùng lặp-->
-<!--                            resolve(true);-->
-<!--                        }-->
-<!--                    },-->
-<!--                    error: function (ex) {-->
-<!--                        alert("Không thể kết nối đến máy chủ.");-->
-<!--                        reject(ex);-->
-<!--                    }-->
-<!--                });-->
-<!--            });-->
-<!--        }-->
-<!--    });-->
-
-<!--</script>-->

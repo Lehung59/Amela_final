@@ -24,20 +24,21 @@
                     <div class="card-body p-4 p-md-5">
 
 
-                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Thông tin mail</h3>
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Mail information</h3>
                         <form th:action="@{/admin/mail/insert}" th:object="${mailForm}" method="POST"
-                              onsubmit="return confirmSubmit();" >
+                              onsubmit="return confirmSubmit();">
                             <div class="row">
                                 <div class="col-md-6 mb-4">
 
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formReceive">
-                                            <h6>Người nhận </h6>
+                                            <h6>Receiver </h6>
                                             <div>
                                                 <div class="autocomplete"
                                                      style="width:300px; margin-bottom: 10px; display: inline-block;">
                                                     <div class="autocomplete" style="width:300px; margin-bottom: 10px;">
-                                                        <input class="rounded" id="myInputEmail" type="text" name="myCountry"
+                                                        <input class="rounded" id="myInputEmail" type="text"
+                                                               name="myCountry"
                                                                placeholder="Email" style="margin-left: 5px;">
                                                         <i onclick="addToRecipient()"
                                                            class="px-3 fa-solid fa-2x fa-circle-plus"
@@ -58,12 +59,12 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="" style="margin-left: 100px;">
                                         <div data-mdb-input-init class="form-outline mb-3">
-                                            <h6>Ngày gửi</h6>
+                                            <h6>Sending date</h6>
                                             <input type="date" class="form-control" id="datepicker"
                                                    th:field="*{dateSend}" autocomplete="off"/>
                                         </div>
                                         <div data-mdb-input-init class="form-outline mb-3">
-                                            <h6>Giờ gửi</h6>
+                                            <h6>Sending time</h6>
                                             <input type="time" class="form-control" id="timepicker"
                                                    th:field="*{timeSend}" autocomplete="off"/>
                                         </div>
@@ -77,7 +78,7 @@
                             <div class="row">
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div id="formHeader">
-                                        <h6>Tiêu đề</h6>
+                                        <h6>Title</h6>
                                         <label>
                                             <textarea class="rounded" th:field="*{title}" rows="2" cols="65"></textarea>
                                         </label>
@@ -89,7 +90,7 @@
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formContent">
-                                            <h6>Nội dung</h6>
+                                            <h6>Content</h6>
                                             <label>
                                                 <textarea class="rounded" th:field="*{content}" rows="5"
                                                           cols="65"></textarea>
@@ -99,14 +100,16 @@
                                 </div>
                             </div>
 
-                            <div class="mt-1 pt-1 ">
+                            <div class="mt-1 pt-1 d-flex">
                                 <!--                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="button" value="Edit" th:attr="onclick='editAttendance(' + ${attendance.id} + ')'" />-->
                                 <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg"
                                        type="button" value="Back" th:attr="onclick='backToMails()'"/>
 
-<!--                                <input  data-mdb-button-init-->
-<!--                                       data-mdb-ripple-init class="btn btn-primary btn-lg"-->
-<!--                                       style="margin-left: 390px;" type="submit" value="Submit"/>-->
+                                <button class="btn btn-primary btn-lg m-1" id="draftButton" disabled>Draft</button>
+
+                                <!--                                <input  data-mdb-button-init-->
+                                <!--                                       data-mdb-ripple-init class="btn btn-primary btn-lg"-->
+                                <!--                                       style="margin-left: 390px;" type="submit" value="Submit"/>-->
                                 <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg disabled"
                                        style="margin-left: 390px;" type="submit" value="Submit" disabled/>
 
@@ -126,14 +129,97 @@
 
 <script th:inline="javascript">
     var mailList = /*[[${mailList}]]*/ [];
+    function checkFormFields() {
+        const dateSend = document.getElementById("datepicker").value;
+        const timeSend = document.getElementById("timepicker").value;
+        const mailRecipient = document.getElementById("mailRecipient").value;
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
+
+        const isFormFilled = dateSend || timeSend || mailRecipient || title || content;
+        if(!isFormFilled){
+            document.getElementById("draftButton").disabled = true;
+            document.getElementById("draftButton").classList.add("disabled");
+            document.getElementById("submitButton").disabled = true;
+            document.getElementById("submitButton").classList.add("disabled");
+        } else{
+            document.getElementById("draftButton").disabled = false;
+            document.getElementById("draftButton").classList.remove("disabled");
+            document.getElementById("submitButton").disabled = false;
+            document.getElementById("submitButton").classList.remove("disabled");
+        }
+    }
+
+    document.getElementById("datepicker").addEventListener("input", checkFormFields);
+    document.getElementById("timepicker").addEventListener("input", checkFormFields);
+    document.getElementById("mailRecipient").addEventListener("input", checkFormFields);
+    document.getElementById("title").addEventListener("input", checkFormFields);
+    document.getElementById("content").addEventListener("input", checkFormFields);
+
 </script>
 
 <script>
+    function saveDraft(url, data) {
+        console.log("Starting draft function");
+        console.log("URL:", url);
+        console.log("Data to be sent:", data);
+
+        return new Promise(function (resolve, reject) {
+            $.ajax({
+                url: url,
+                type: "POST",
+                data: data,
+                success: function (response) {
+                    console.log("Received response from server:", response);
+                    alert('Mail đã được lưu thành draft.');
+
+                },
+                error: function (ex) {
+                    console.error("Error during AJAX request:", ex);
+                    alert("Can not connect to server.");
+                    reject(ex); // Indicate failure of the API call
+                }
+            });
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        var draftButton = document.getElementById("draftButton");
+
+        draftButton.addEventListener("click", function (event) {
+            event.preventDefault();
+
+            var mailData = {
+                dateSend: document.getElementById("datepicker").value,
+                timeSend: document.getElementById("timepicker").value,
+                mailRecipient: document.getElementById("mailRecipient").value,
+                title: document.getElementById("title").value,
+                content: document.getElementById("content").value
+            };
+
+            saveDraft("/admin/mail/setdraft", mailData).then(function () {
+                window.location.href = "/admin/mails";
+            }).catch(function (ex) {
+                console.error("Failed to save draft:", ex);
+            });
+
+        });
+    });
+
+
     document.addEventListener("DOMContentLoaded", function () {
         var dateInput = document.getElementById("datepicker");
         var timeInput = document.getElementById("timepicker");
         var submitBtn = document.querySelector("input[type='submit']");
         var warningMessage = document.getElementById("time-warning");
+
+        if(!dateInput || !timeInput){
+            submitBtn.disabled = true;
+            submitBtn.classList.add("disabled");
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("disabled");
+        }
 
         dateInput.addEventListener("change", function () {
             validateDateTime();
@@ -162,7 +248,7 @@
 
 </script>
 
-<script >
+<script>
     function addToRecipient() {
         var input = document.getElementById("myInputEmail");
         var recipient = document.getElementById("formReceive").querySelector("textarea");
@@ -195,10 +281,11 @@
     }
 
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         // Khởi tạo autocomplete cho input box có id là 'myInput'
         autocomplete(document.getElementById('myInputEmail'), mailList);
     });
+
     // autocomplete(document.getElementById("myInput"), mailList);
 
     function confirmSubmit() {
@@ -209,42 +296,40 @@
         return confirmed;
     }
 
-    var draftMailUrl = 'http://localhost:8080/admin/mail/draft';
 
 
-    async function backToMails() {
-        var path = window.location.pathname;
-        // Biểu thức chính quy để tìm số cuối cùng trong đường dẫn
-        var idMatch = path.match(/\/edit\/(\d+)$/);
-        // Nếu tìm thấy, lấy giá trị số (ID)
-        var id = idMatch ? idMatch[1] : -1;
+    function backToMails() {
+        const dateSend = document.getElementById("datepicker").value;
+        const timeSend = document.getElementById("timepicker").value;
+        const mailRecipient = document.getElementById("mailRecipient").value;
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
 
-        // Tạo đối tượng dữ liệu chứa ID
-        var data = { id: id };
-        var isUnique = await callApiBack(draftMailUrl, data);
+        const isFormFilled = dateSend || timeSend || mailRecipient || title || content;
 
-        return isUnique;
+        if (isFormFilled) {
+            if (confirm("Bạn có muốn lưu mail vào bản nháp không?")) {
+                var mailData = {
+                    dateSend: document.getElementById("datepicker").value,
+                    timeSend: document.getElementById("timepicker").value,
+                    mailRecipient: document.getElementById("mailRecipient").value,
+                    title: document.getElementById("title").value,
+                    content: document.getElementById("content").value
+                };
 
+                saveDraft("/admin/mail/setdraft", mailData).then(() => {
+                    window.location.href = "/admin/mails";
+                }).catch((error) => {
+                    console.error("Failed to save draft:", error);
+                    // Optionally handle the error case here
+                });
+            } else {
+                window.location.href = "/admin/mails";
+            }
+        } else {
+            window.location.href = "/admin/mails";
+        }
     }
 
-    function callApiBack(url, data) {
-        console.log("URL:", url);
-        console.log("Data to be sent:", data);
 
-        return new Promise(function (resolve, reject) {
-            $.ajax({
-                url: url,
-                type: "POST",
-                data: data,
-                success: function (response) {
-                    console.log("Received response from server:", response);
-                },
-                error: function (ex) {
-                    console.error("Error during AJAX request:", ex);
-                    alert("Không thể kết nối đến máy chủ.");
-                    reject(ex); // Indicate failure of the API call
-                }
-            });
-        });
-    }
 </script>

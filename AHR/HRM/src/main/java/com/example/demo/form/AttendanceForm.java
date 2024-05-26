@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Date;
@@ -18,7 +19,7 @@ import java.util.Date;
 public class AttendanceForm {
 
     private int id;
-
+    @NotEmpty(message = "Thiếu ngày phép")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dateCheck;
 

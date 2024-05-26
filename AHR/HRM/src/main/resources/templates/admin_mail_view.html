@@ -34,14 +34,14 @@
                     <div class="card-body p-4 p-md-5">
 
 
-                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Thông tin mail</h3>
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Th�ng tin mail</h3>
                         <form th:object="${mail}" method="POST" onsubmit="return confirmSubmit();">
                             <div class="row">
                                 <div class="col-md-6 mb-4">
 
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formReceive">
-                                            <h6>Người nhận</h6>
+                                            <h6>Receiver</h6>
                                             <label>
                                                 <textarea th:field="*{mailRecipient}" rows="4" cols="35"
                                                           readonly></textarea>
@@ -53,14 +53,14 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="" style="margin-left: 100px;">
                                         <div data-mdb-input-init class="form-outline mb-3">
-                                            <h6>Ngày gửi</h6>
+                                            <h6>Sending date</h6>
                                             <span th:text="*{dateSend}"></span>
                                             <!--                                        <p th:if="${#fields.hasErrors('lastName')}" class="text-danger" th:errors="*{lastName}"></p>-->
 
                                         </div>
 
                                         <div data-mdb-input-init class="form-outline">
-                                            <h6>Trạng thái:</h6>
+                                            <h6>Status:</h6>
                                             <span th:text="*{status}"></span>
                                         </div>
                                     </div>
@@ -71,7 +71,7 @@
                             <div class="row">
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div id="formHeader">
-                                        <h6>Tiêu đề</h6>
+                                        <h6>Title</h6>
                                         <label>
                                                 <textarea th:field="*{title}" rows="2" cols="65"
                                                           readonly></textarea>
@@ -85,7 +85,7 @@
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formContent">
-                                            <h6>Nội dung</h6>
+                                            <h6>Content</h6>
                                             <label>
                                                 <textarea th:field="*{content}" rows="5" cols="65"
                                                           readonly></textarea>
@@ -95,40 +95,6 @@
                                 </div>
 
                             </div>
-                            <!--                            <div class="row">-->
-                            <!--                                <div class="col-md-6 mb-2 pb-2" >-->
-
-                            <!--                                    <h6 class="mb-2 pb-1">Trạng thái: </h6>-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="ontime" th:value="${ONTIME}" th:checked="*{status == 'ONTIME'}" disabled />-->
-                            <!--                                        <label class="form-check-label" for="ontime">Đúng giờ</label>-->
-                            <!--                                    </div>-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="late" th:value="${LATE}" th:checked="*{status == 'LATE'}" disabled/>-->
-                            <!--                                        <label class="form-check-label" for="late">Muộn</label>-->
-                            <!--                                    </div>-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="miss" th:value="${MISS}" th:checked="*{status == 'MISS'}" disabled/>-->
-                            <!--                                        <label class="form-check-label" for="miss">Vắng</label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
-                            <!--                            <div class="row">-->
-                            <!--                                <div class="col-md-6 mb-4 pb-2" >-->
-                            <!--                                    <div class="form-check form-check-inline">-->
-                            <!--                                        <input class="form-check-input" th:field="*{allowed}" type="checkbox" id="permissionCheckbox" th:value="true" th:checked="*{allowed}" onchange="toggleFormContentReadOnly()" disabled/>-->
-                            <!--                                        <label class="form-check-label" for="permissionCheckbox">Có phép</label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                                <div class="col-md-6 mb-4 pb-2">-->
-                            <!--                                    <div id="formContent">-->
-                            <!--                                        <h6>Ghi chú</h6>-->
-                            <!--                                        <label>-->
-                            <!--                                            <textarea th:field="*{note}" rows="4" cols="40" readonly></textarea>-->
-                            <!--                                        </label>-->
-                            <!--                                    </div>-->
-                            <!--                                </div>-->
-                            <!--                            </div>-->
 
                             <div class="mt-1 pt-1 ">
                                 <!--                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="button" value="Edit" th:attr="onclick='editAttendance(' + ${attendance.id} + ')'" />-->

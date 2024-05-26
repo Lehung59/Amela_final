@@ -32,12 +32,13 @@ public class Constants {
     public static final String VALID = "valid";
 
     // Thông điệp
-    public static final String INVALID_TOKEN_ERROR_MESS = "Mã kích hoạt không chính xác";
-    public static final String EMAIL_ERROR_MESS = "Mail kích hoạt không chính xác";
-    public static final String REVOKED_TOKEN_ERROR_MESS = "Mã kích hoạt không chính xác";
-    public static final String TIME_ERROR_MESS = "Mã kích hoạt đã hết hạn";
-    public static final String VERIFIED_MESS = "Tài khoản của bạn đã được kích hoạt trước đó";
-    public static final String VALID_MESS = "Kích hoạt thành công";
-    public static final String EXCEPTION_ERROR_MESS = "Đã có lỗi xảy ra";
+    public static final String INVALID_TOKEN_ERROR_MESS = "Invalid activation code";
+    public static final String EMAIL_ERROR_MESS = "Invalid activation email";
+    public static final String REVOKED_TOKEN_ERROR_MESS = "Invalid activation code";
+    public static final String TIME_ERROR_MESS = "The activation code has expired";
+    public static final String VERIFIED_MESS = "Your account has already been activated";
+    public static final String VALID_MESS = "Activation successful";
+    public static final String EXCEPTION_ERROR_MESS = "An error has occurred";
+
 
 }

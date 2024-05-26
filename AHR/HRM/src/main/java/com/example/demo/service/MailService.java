@@ -19,8 +19,6 @@ public interface MailService {
      Page<MailForm> findAllMailPaginable(Pageable pageable);
      Page<MailForm> findByTitleContainingIgnoreCase(String keyword, Pageable pageable);
 
-//     void draftMail(MailForm mailForm);
-
      Optional<Mail> checkExsist(Integer id);
 
      void draftNewMail(MailForm mailForm);

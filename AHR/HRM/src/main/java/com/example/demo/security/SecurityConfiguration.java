@@ -15,12 +15,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class SecurityConfiguration {
+public class SecurityConfiguration implements WebMvcConfigurer {
     UserDetailsService userDetailsService;
 
     @Bean
@@ -36,12 +37,13 @@ public class SecurityConfiguration {
         return authenticationProvider;
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
-                        a -> a.requestMatchers(
-
+                        auth -> auth
+                                .requestMatchers(
                                         "/",
                                         "/error/**",
                                         "/login/**",
@@ -49,16 +51,15 @@ public class SecurityConfiguration {
                                         "/js/**",
                                         "/check/**",
                                         "/user/active/**",
-                                "/user/forgetpassword/**",
+                                        "/user/forgetpassword/**",
                                         "/webjars/**",
-                                        "/user/resetpassword/**"
-
-
-
-                                )
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated()
+                                        "/user/resetpassword/**",
+                                        "/users",
+                                        "/user/view/**"
+                                ).permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .requestMatchers("/user/**").hasRole("EMPLOYEE")
+                                .anyRequest().authenticated()
                 )
                 .formLogin(
                         l -> l.loginPage("/login").usernameParameter("email")
@@ -68,7 +69,7 @@ public class SecurityConfiguration {
                 .logout(
                         l -> l.invalidateHttpSession(true).clearAuthentication(true)
                                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                                .logoutSuccessUrl("/")
+                                .logoutSuccessUrl("/login")
                 );
         return http.build();
     }

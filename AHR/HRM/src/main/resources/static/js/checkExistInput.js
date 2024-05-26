@@ -15,7 +15,7 @@
      }
      // Kiểm tra định dạng email
      if (!emailRegex.test(email)) {
-         errorElement.innerText = 'Vui lòng nhập địa chỉ email hợp lệ.';
+         errorElement.innerText = 'Please enter a valid email address.';
          emailInput.focus();
          return false; // Email không hợp lệ
      }
@@ -47,7 +47,7 @@
      }
      // Validate phone number format using a regex pattern
      if (!phoneRegex.test(phone) || phone.length !== 10) {
-         errorElement.innerText = 'Vui lòng nhập số điện thoại hợp lệ (10 chữ số).';
+         errorElement.innerText = 'Please enter a valid phone number (10 digits).';
          phoneInput.focus();
          submitButton.disabled = true; // Disable the submit button
          return false; // Invalid phone number format or length
@@ -59,7 +59,7 @@
 
      // Check the uniqueness of the phone number
      var dataPhone = { phone: phone };
-     var isUnique = await checkUnique(checkPhoneURL, dataPhone, errorElement, `Số điện thoại đã tồn tại.`);
+     var isUnique = await checkUnique(checkPhoneURL, dataPhone, errorElement, `Phone number already exists.`);
      if (!isUnique) {
          submitButton.disabled = true; // Disable the submit button if phone number is not unique
      } else {
@@ -92,7 +92,7 @@
              },
              error: function (ex) {
                  console.error("Error during AJAX request:", ex);
-                 alert("Không thể kết nối đến máy chủ.");
+                 alert("Can not connect to server.");
                  reject(ex); // Indicate failure of the API call
              }
          });

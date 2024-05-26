@@ -6,6 +6,8 @@
     <title>User </title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+    <script th:src="@{/webjars/jquery/3.7.0/dist/jquery.min.js}"></script>
+
 </head>
 <style>
     .page-item.active a {
@@ -52,11 +54,11 @@
             <tr>
                 <th scope="col">Id</th>
 <!--                <th scope="col">Người nhận</th>-->
-                <th scope="col">Mail nhận</th>
-                <th scope="col">Tiêu đề </th>
-                <th scope="col">Ngày gửi</th>
-                <th scope="col">Giờ gửi</th>
-                <th scope="col">Trạng thái</th>
+                <th scope="col">Receiver</th>
+                <th scope="col">Title </th>
+                <th scope="col">Sending date</th>
+                <th scope="col">Sending time </th>
+                <th scope="col">Status</th>
                 <th scope="col">Actions</th>
             </tr>
             </thead>
@@ -86,22 +88,6 @@
                         <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>
                     </button>
                 </td>
-
-
-
-
-
-<!--                <td>-->
-<!--                    <button th:attr="onclick='viewAttendance(' + ${attendance.id} + ')'">-->
-<!--                        <i class="fa-solid fa-circle-info" style="color: #eea738"></i>-->
-<!--                    </button>-->
-<!--                    <button th:attr="onclick='editAttendance(' + ${attendance.id} + ')'">-->
-<!--                        <span class="fa-regular fa-pen-to-square icon-dark" style="color: cornflowerblue"></span>-->
-<!--                    </button>-->
-<!--                    <button th:attr="onclick='confirmDelete(' + ${attendance.id} + ')'">-->
-<!--                        <span class="fa-regular fa-trash-can btn-delete" style="color: red"></span>-->
-<!--                    </button>-->
-<!--                </td>-->
             </tr>
             </tbody>
         </table>
@@ -132,8 +118,29 @@
 
     function confirmDelete(mailId) {
         if (confirm("Are you sure you want to delete this mail?")) {
-            // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
-            window.location.href = "/admin/mail/delete/" + mailId;
+
+            const url = '/admin/mail/delete/' + mailId;
+            console.log("Starting function");
+            console.log("URL:", url);
+
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+                    contentType: "application/json", // Include if needed, but generally DELETE doesn't need it
+                    success: function (response) {
+                        console.log("Received response from server:", response);
+                        alert('Deleted successfully.');
+                        window.location.reload();
+                    },
+                    error: function (ex) {
+                        console.error("Error during AJAX request:", ex);
+                        alert("Can not connect to server.");
+                        reject(ex);
+                    }
+                });
+            });
+            // window.location.href = "/admin/mail/delete/" + mailId;
         }
     }
 

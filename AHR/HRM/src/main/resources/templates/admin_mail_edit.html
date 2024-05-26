@@ -27,7 +27,7 @@
                     <div class="card-body p-4 p-md-5">
 
 
-                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Thông tin mail</h3>
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Edit the mail info</h3>
                         <form th:action="@{/admin/mail/edit/{id}(id=${mail.mailId})}" th:object="${mail}" method="POST"
                               onsubmit="return confirmSubmit();" >
                             <div class="row">
@@ -35,7 +35,7 @@
 
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formReceive">
-                                            <h6>Người nhận </h6>
+                                            <h6>Receiver </h6>
                                             <div>
                                                 <div class="autocomplete"
                                                      style="width:300px; margin-bottom: 10px; display: inline-block;">
@@ -59,7 +59,7 @@
                                 <div class="col-md-6 mb-4">
                                     <div class="" style="margin-left: 100px;">
                                         <div data-mdb-input-init class="form-outline mb-3">
-                                            <h6>Ngày gửi</h6>
+                                            <h6>Sending date</h6>
                                             <input type="date" class="form-control" id="datepicker"
                                                    th:field="*{dateSend}" autocomplete="off" th:attr="disabled=${mail.status} == ${SENT}"/>
                                         </div>
@@ -71,7 +71,7 @@
                                         <p id="time-warning" style="color: red;"></p>
 
                                         <div data-mdb-input-init class="form-outline">
-                                            <h6>Trạng thái:</h6>
+                                            <h6>Status:</h6>
                                             <span th:text="*{status}"></span>
                                         </div>
 
@@ -83,7 +83,7 @@
                             <div class="row">
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div id="formHeader">
-                                        <h6>Tiêu đề</h6>
+                                        <h6>Title</h6>
                                         <label>
                                             <textarea class="rounded" th:field="*{title}" rows="2" cols="65" th:attr="readonly=${mail.status} == ${SENT}"></textarea>
                                         </label>
@@ -95,7 +95,7 @@
                                 <div class="col-md-10 mb-4 d-flex align-items-center">
                                     <div data-mdb-input-init class="form-outline">
                                         <div id="formContent">
-                                            <h6>Nội dung</h6>
+                                            <h6>Content</h6>
                                             <label>
                                                 <textarea class="rounded" th:field="*{content}" rows="5"
                                                           cols="65"  th:attr="readonly=${mail.status} == ${SENT}"></textarea>
@@ -200,7 +200,7 @@
                 },
                 error: function (ex) {
                     console.error("Error during AJAX request:", ex);
-                    alert("Không thể kết nối đến máy chủ.");
+                    alert("Can not connect to server.");
                     reject(ex); // Indicate failure of the API call
                 }
             });

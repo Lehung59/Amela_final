@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -21,9 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -83,10 +83,15 @@ public class MailController {
         return "admin_mail_view";
     }
 
-    @GetMapping("/admin/mail/delete/{id}")
-    public String deleteMail(@PathVariable int id) {
-        mailService.deleteMail(id);
-        return "redirect:/admin/mails";
+    @DeleteMapping("/admin/mail/delete/{id}")
+    public ResponseEntity<?> deleteMail(@PathVariable int id) {
+        try{
+            mailService.deleteMail(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete mail: " + e.getMessage());
+        }
     }
 
     @GetMapping("admin/mail/insert")
@@ -101,16 +106,13 @@ public class MailController {
     public String saveMail(@Valid @ModelAttribute("mailForm") MailForm mailForm,
                            BindingResult bindingResult,
                            RedirectAttributes redirectAttributes) {
-//        List<Attendance> newObj = attendanceRepo.findByEmailAndDate(attendance.getUser().getEmail(), attendance.getDateCheck());
-//        if(!newObj.isEmpty()){
-//
-////            ObjectError error = new ObjectError("attendance", "Đã tồn tại chấm công này");
-//            bindingResult.rejectValue("dateCheck", "Đã tồn tại chấm công này");
-////            bindingResult.addError(error);
-//        }
-
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Đã có lỗi xảy ra");
+            Map<String, String> errors= new HashMap<>();
+
+            bindingResult.getFieldErrors().forEach(
+                    error -> errors.put(error.getField(), error.getDefaultMessage())
+            );
+            redirectAttributes.addFlashAttribute(Constants.ERROR, errors.values());
 
             return "redirect:/admin/mail/insert";
         }
@@ -122,7 +124,7 @@ public class MailController {
     }
     @GetMapping("/admin/mail/insert/re")
     public String insertMailRe(RedirectAttributes redirectAttributes) {
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Mail của bạn đã được lưu lại");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Your email has been saved");
 
         return "redirect:/admin/mails";
     }
@@ -139,7 +141,7 @@ public class MailController {
         model.addAttribute("mail", mailForm);
         model.addAttribute("mailList", userService.getAllEmail());
         if (mailForm.getStatus().equals(MailStatus.SENT)) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Mail của bạn được gửi đi");
+            redirectAttributes.addFlashAttribute(Constants.ERROR, "Your email has been sent");
             return "redirect:/admin/mail/view/" + id;
         }
         return "admin_mail_edit";
@@ -151,18 +153,23 @@ public class MailController {
                              BindingResult bindingResult,
                              RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Đã có lỗi xảy ra");
+            Map<String, String> errors= new HashMap<>();
+
+            bindingResult.getFieldErrors().forEach(
+                    error -> errors.put(error.getField(), error.getDefaultMessage())
+            );
+            redirectAttributes.addFlashAttribute(Constants.ERROR, errors.values());
 
             return "redirect:/admin/mail/edit/" + id;
         }
         MailForm mailInDb = mailService.getMailById(id);
         if (mailInDb.getStatus().equals(MailStatus.SENT)) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Mail của bạn được gửi đi");
+            redirectAttributes.addFlashAttribute(Constants.ERROR, "Your email has been sent");
             return "redirect:/admin/mail/view/" + id;
         }
         mailForm.setMailId(id);
         mailService.updateMail(mailForm);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Chỉnh sửa mail thành công");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Email edited successfully");
         return "redirect:/admin/mails";
     }
     @PostMapping("/admin/mail/setdraft")
@@ -184,18 +191,18 @@ public class MailController {
                 .build();
         if(id == null){
             mailService.draftNewMail(mailForm);
-            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Mail của bạn đã được lưu lại");
+            redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Your email has been saved");
             return "redirect:/admin/mails";
         }
         Optional<Mail> mail = mailService.checkExsist(id);
 
         if(mail.get().getStatus().equals(MailStatus.SENT)) {
-            redirectAttributes.addFlashAttribute(Constants.ERROR, "Mail của bạn được gửi đi");
+            redirectAttributes.addFlashAttribute(Constants.ERROR, "Your email has been sent");
             return "redirect:/admin/mail/view/" + id;
         }
         mailForm.setMailId(id);
         mailService.draftExistMail(mailForm);
-        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Mail của bạn đã được lưu lại thành draft");
+        redirectAttributes.addFlashAttribute(Constants.SUCCESS, "Your email has been saved as draft");
         return "redirect:/admin/mails";
     }
 

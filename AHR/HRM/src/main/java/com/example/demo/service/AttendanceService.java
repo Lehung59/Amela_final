@@ -13,10 +13,10 @@ import java.util.List;
 
 public interface AttendanceService {
     List<Attendance> getAllAttendance();
-    Attendance getAttendanceById(int id);
-    void saveAttendance(Attendance attendance);
+    Attendance getAttendanceById(int id) throws Exception;
+    void saveAttendance(AttendanceForm attendance) throws Exception;
     void updateAttendance(AttendanceForm attendanceForm);
-    void deleteAttendance(int id);
+    void deleteAttendance(int id) throws Exception;
 
     AttendanceForm setCheckIn(int id);
 
@@ -25,10 +25,7 @@ public interface AttendanceService {
     List<Attendance> findByEmailAndDate(String email, LocalDate dateCheck);
 
     Page<AttendanceForm> getAllAttendanceByIdPaginable(int page, int size, int id, LocalDate startDate, LocalDate endDate);
-//    List<Attendance> searchAttendance(String keyword);
-//    Page<Attendance> searchAttendance(String keyword, int pageNo, int pageSize);
 
-//     Page<Attendance> getAllUser(int pageNumber, String keyword) ;
 
 
 }

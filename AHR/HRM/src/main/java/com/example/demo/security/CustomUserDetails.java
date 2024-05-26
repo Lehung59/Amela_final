@@ -30,10 +30,9 @@ public class CustomUserDetails implements UserDetails {
         this.avatar = user.getAvatar();
         this.password = user.getPassword();
         this.isEnabled = user.getIsActived();
-        this.authorities =
-                Arrays.stream(user.getRole().name().split(","))
-                        .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+        this.authorities = Arrays.stream(user.getRole().name().split(","))
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toList());
     }
 
     @Override

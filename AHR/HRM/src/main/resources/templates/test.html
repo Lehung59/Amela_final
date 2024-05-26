@@ -43,12 +43,12 @@
                 <div class="d-flex mb-1">
                     <div class="col-auto m-lg-1">
                         <select class="form-select" id="sel1" th:field="*{month}"  name="month" >
-                            <option th:each="index : ${#numbers.sequence(1, 12)}" th:value="${index}" th:text="${'Tháng ' + index}"></option>
+                            <option th:each="index : ${#numbers.sequence(1, 12)}" th:value="${index}" th:text="${'Month ' + index}"></option>
                         </select>
                     </div>
                     <div class="col-auto m-lg-1">
                         <select class="form-select" id="sel2" th:field="*{year}"  name="year" >
-                            <option th:each="index : ${#numbers.sequence(2024, 2019)}" th:value="${index}" th:text="${'Năm ' + index}"></option>
+                            <option th:each="index : ${#numbers.sequence(2024, 2019)}" th:value="${index}" th:text="${'Year ' + index}"></option>
                         </select>
                     </div>
                     <div class="col-auto m-lg-1">

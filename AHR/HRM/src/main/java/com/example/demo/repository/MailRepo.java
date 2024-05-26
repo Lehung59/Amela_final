@@ -23,4 +23,10 @@ public interface MailRepo extends JpaRepository<Mail, Integer> {
     @Transactional
     @Query(value = "DELETE FROM users_mails WHERE mail_id = :mailId", nativeQuery = true)
     void deleteAllUsersByMailId(@Param("mailId") int mailId);
+
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM Mail m WHERE m.mailId = :mailId")
+    void deleteByMailId(@Param("mailId") int mailId);
 }

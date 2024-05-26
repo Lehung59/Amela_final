@@ -31,7 +31,7 @@ public class User {
 
     @Column(nullable = false, unique = true)
 //    @Email(message = "Email is not valid", regexp = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$")
-    @ValidEmail
+    @ValidEmail(message = "Invalid syntax")
     @NotEmpty(message = "Email cannot be empty")
     private String email;
 

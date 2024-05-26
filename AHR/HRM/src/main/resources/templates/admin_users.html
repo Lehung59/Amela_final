@@ -7,6 +7,8 @@
     <title>User </title>
     <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.2.3/css/bootstrap.min.css}"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+    <script th:src="@{/webjars/jquery/3.7.0/dist/jquery.min.js}"></script>
+
 </head>
 <style>
     .page-item.active a {
@@ -33,15 +35,16 @@
     </div>
     <div class="d-flex justify-content-between">
 
-        <div  class="">
-            <a sec:authorize="hasAuthority('ADMIN')" th:href="@{/admin/insert}" class="btn btn-primary btn-sm mb-3"
+        <div class="">
+            <a sec:authorize="hasAuthority('ROLE_ADMIN')" th:href="@{/admin/insert}" class="btn btn-primary btn-sm mb-3"
                style="background-color: #dea8059c; color: black;"> Add Employee</a>
         </div>
 
         <div class="">
             <form>
                 <div class="input-group d-flex mb-3">
-                    <input id="keyword" type="search" name="keyword" th:value="${keyword}" required class="form-control "
+                    <input id="keyword" type="search" name="keyword" th:value="${keyword}" required
+                           class="form-control "
                            placeholder="Enter keyword">
                     <button type="submit" class="btn btn-secondary"
                             style="background-color: #dea8059c; color: #333333 ">Search
@@ -59,23 +62,23 @@
                 <th scope="col">Full name</th>
                 <th scope="col">Email</th>
                 <th scope="col">Phone number</th>
-                <th sec:authorize="hasAuthority('ADMIN')" scope="col">Active</th>
+                <th sec:authorize="hasAuthority('ROLE_ADMIN')" scope="col">Active</th>
                 <th scope="col">Address</th>
-                <th sec:authorize="hasAuthority('ADMIN')" scope="col">Actions</th>
+                <th sec:authorize="hasAuthority('ROLE_ADMIN')" scope="col">Actions</th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="user : ${users}">
                 <th scope="row" th:text="${user.id}"></th>
                 <td> <!-- Add Avatar cell -->
-                    <img th:src="${user.avatar}" alt="Avatar" style="width: 50px; height: 50px; border-radius: 50%;" />
+                    <img th:src="${user.avatar}" alt="Avatar" style="width: 50px; height: 50px; border-radius: 50%;"/>
                 </td>
                 <td th:text="${user.firstName} +' '+${user.lastName}"></td>
                 <td th:text="${user.email}"></td>
                 <td th:text="${user.phoneNumber}"></td>
-                <td sec:authorize="hasAuthority('ADMIN')" th:text="${user.isActived}"></td>
+                <td sec:authorize="hasAuthority('ROLE_ADMIN')" th:text="${user.isActived}"></td>
                 <td th:text="${user.address}"></td>
-                <td sec:authorize="hasAuthority('ADMIN')">
+                <td sec:authorize="hasAuthority('ROLE_ADMIN')">
                     <button th:onclick="'viewUser(' + ${user.id} + ')'">
                         <span class="fa-solid fa-user"></span>
                     </button>
@@ -100,34 +103,40 @@
 </html>
 <script>
     function confirmDelete(userId) {
-        if (confirm("Are you sure you want to delete this user?")) {
-            // Nếu người dùng nhấp vào "OK", chuyển hướng đến URL xóa người dùng
-            window.location.href = "/admin/delete/" + userId;
+        if (confirm("Are you sure you want to delete this user?")){
+
+            const url = '/admin/delete/' + userId;
+            console.log("Starting draft function");
+            console.log("URL:", url);
+
+            return new Promise(function (resolve, reject) {
+                $.ajax({
+                    url: url,
+                    type: "DELETE",
+                    contentType: "application/json", // Include if needed, but generally DELETE doesn't need it
+                    success: function (response) {
+                        console.log("Received response from server:", response);
+                        alert('Deleted successfully.');
+                        window.location.reload();
+                    },
+                    error: function (ex) {
+                        console.error("Error during AJAX request:", ex);
+                        alert("Can not connect to server.");
+                        reject(ex);
+                    }
+                });
+            });
         }
+
     }
 
     function editUser(userId) {
         window.location.href = "admin/user/edit/" + userId;
     }
+
     function viewUser(userId) {
         window.location.href = "/user/view/" + userId;
     }
-    // import {Input, Ripple, initMDB} from "mdb-ui-kit";
-    // $(document).ready(function () {
-    //     // ...
-    //
-    //     $("#btnClear").on("click", function (e) {
-    //         e.preventDefault();
-    //         $("#keyword").text("");
-    //         window.location = "[[@{/tutorials}]]";
-    //     });
-    // });
-    //
-    // function changePageSize() {
-    //     $("#searchForm").submit();
-    // }
-    // initMDB({Input, Ripple});
-    //
 
 
     let paginationItems = document.querySelectorAll('.page-item');

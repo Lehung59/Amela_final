@@ -14,6 +14,9 @@
 <body>
 <section class="">
     <div class="container py-5 h-100">
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
         <div class="row justify-content-center align-items-center h-100">
             <div class="col-12 col-lg-9 col-xl-7">
                 <div class="card shadow-2-strong card-registration" style="border-radius: 15px;">
@@ -25,9 +28,11 @@
                                 <div class="col-md-6 mb-4">
 
                                     <div data-mdb-input-init class="form-outline">
-                                        <input type="text" th:field="*{user.email}" id="email" class="form-control form-control-lg" />
+                                        <input type="text" th:field="*{user.email}" id="email" class="form-control form-control-lg" onblur="validateEmail()"/>
                                         <label class="form-label" for="email">Email</label>
-<!--                                        <p th:if="${#fields.hasErrors('email')}" class="text-danger" th:errors="*{user.email}"></p>-->
+                                        <p th:if="${#fields.hasErrors('user.email')}" class="text-danger" th:errors="*{user.email}"></p>
+                                        <p id="emailError" class="text-danger"></p>
+
                                     </div>
 
                                 </div>
@@ -35,11 +40,11 @@
 
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="date" th:field="*{dateCheck}" class="form-control form-control-lg" id="dateCheck" />
-                                        <label for="dateCheck" class="form-label">Ngày chấm công</label>
+                                        <label for="dateCheck" class="form-label">Timekeeping date</label>
 <!--                                        <span th:if="${#fields.hasErrors('dateCheck')}" th:errors="*{dateCheck}">Error!</span>-->
 
                                     </div>
-<!--                                    <p th:if="${#fields.hasErrors('dateCheck')}" class="text-danger" th:errors="*{dateCheck}"></p>-->
+                                    <p th:if="${#fields.hasErrors('dateCheck')}" class="text-danger" th:errors="*{dateCheck}"></p>
 
                                 </div>
 
@@ -52,19 +57,19 @@
 
                                 <div class="col-md-6 mb-2 pb-2">
 
-                                    <h6 class="mb-2 pb-1">Trạng thái: </h6>
+                                    <h6 class="mb-2 pb-1">Status: </h6>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="late" th:value="${LATE}" checked/>
-                                        <label class="form-check-label" for="late">Muộn</label>
+                                        <label class="form-check-label" for="late">Late</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="miss" th:value="${MISS}" />
-                                        <label class="form-check-label" for="miss">Vắng</label>
+                                        <label class="form-check-label" for="miss">Miss</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4 pb-2">
                                     <div id="formContent" style="display:none;">
-                                        <h6>Ghi chú</h6>
+                                        <h6>Note</h6>
                                         <label>
                                             <textarea th:field="*{note}" rows="4" cols="45"></textarea>
                                         </label>
@@ -76,13 +81,13 @@
                                 <div class="col-md-6 mb-4 pb-2">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{allowed}" type="checkbox" id="permissionCheckbox" th:value=1 onchange="toggleFormVisibility()" />
-                                        <label class="form-check-label" for="permissionCheckbox">Có phép</label>
+                                        <label class="form-check-label" for="permissionCheckbox">Allowed</label>
                                     </div>
                                 </div>
 
                             </div>
                             <div class="mt-1 pt-1">
-                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="submit" value="Submit" />
+                                <input data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-lg" type="submit" value="Submit" id="submitBtn" />
                             </div>
 
                         </form>
@@ -99,5 +104,20 @@
         const form = document.getElementById("formContent");
         const isChecked = document.getElementById("permissionCheckbox").checked;
         form.style.display = isChecked ? "block" : "none";
+    }
+
+    function validateEmail() {
+        var emailField = document.getElementById("email");
+        var emailError = document.getElementById("emailError");
+        var submitBtn = document.getElementById("submitBtn");
+        var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (emailField.value.match(emailPattern)) {
+            emailError.textContent = "";  // Clear error message
+            submitBtn.disabled = false;   // Enable submit button
+        } else {
+            emailError.textContent = "Invalid email format";  // Set error message
+            submitBtn.disabled = true;   // Disable submit button
+        }
     }
 </script>

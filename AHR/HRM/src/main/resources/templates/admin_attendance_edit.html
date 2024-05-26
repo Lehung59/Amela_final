@@ -56,7 +56,7 @@
                     <div class="card-body p-4 p-md-5">
 
 
-                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Chỉnh sửa chấm công</h3>
+                        <h3 class="mb-4 pb-2 pb-md-0 mb-md-5">Edit timekeeping</h3>
                         <form th:action="@{/admin/attendance/edit/{id}(id=${attendance.id})}" th:object="${attendance}" method="POST" onsubmit="return confirmSubmit();">
                             <div class="row">
                                 <div class="col-md-6 mb-4">
@@ -72,7 +72,7 @@
 
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="date" th:field="*{dateCheck}" class="form-control form-control-lg" id="dateCheck" />
-                                        <label for="dateCheck" class="form-label">Ngày chấm công</label>
+                                        <label for="dateCheck" class="form-label">Timekeeping date</label>
                                     </div>
 
                                 </div>
@@ -83,8 +83,8 @@
 
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="time" th:field="*{timeCheckIn}" class="form-control form-control-lg" id="timeCheckIn" />
-                                        <label for="timeCheckIn" class="form-label">Giờ checkin</label>
-                                        <p id="checkinError" class="text-danger" style="margin-top: 0.25rem; display: none;">Giờ checkin phải nhỏ hơn giờ checkout</p>
+                                        <label for="timeCheckIn" class="form-label">Checkin time</label>
+                                        <p id="checkinError" class="text-danger" style="margin-top: 0.25rem; display: none;">Checkin time must be less than checkout time</p>
 
                                     </div>
 
@@ -93,8 +93,8 @@
 
                                     <div data-mdb-input-init class="form-outline datepicker w-100">
                                         <input type="time" th:field="*{timeCheckOut}" class="form-control form-control-lg" id="timeCheckOut" />
-                                        <label for="timeCheckOut" class="form-label">Giờ checkout</label>
-                                        <p id="checkoutError" class="text-danger" style="margin-top: 0.25rem; display: none;">Giờ checkout phải lớn hơn giờ checkin</p>
+                                        <label for="timeCheckOut" class="form-label">Checkout time</label>
+                                        <p id="checkoutError" class="text-danger" style="margin-top: 0.25rem; display: none;">Checkout time must be greater than checkin time</p>
                                     </div>
 
                                 </div>
@@ -102,18 +102,18 @@
                             <div class="row">
                                 <div class="col-md-6 mb-2 pb-2">
 
-                                    <h6 class="mb-2 pb-1">Trạng thái: </h6>
+                                    <h6 class="mb-2 pb-1">Status: </h6>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="ontime" th:value="${ONTIME}" th:checked="*{status == 'ONTIME'}" disabled />
-                                        <label class="form-check-label" for="ontime">Đúng giờ</label>
+                                        <label class="form-check-label" for="ontime">On time</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="late" th:value="${LATE}" th:checked="*{status == 'LATE'}" disabled/>
-                                        <label class="form-check-label" for="late">Muộn</label>
+                                        <label class="form-check-label" for="late">Late</label>
                                     </div>
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{status}" type="radio" name="status" id="miss" th:value="${MISS}" th:checked="*{status == 'MISS'}" />
-                                        <label class="form-check-label" for="miss">Vắng</label>
+                                        <label class="form-check-label" for="miss">Miss</label>
                                     </div>
                                 </div>
                             </div>
@@ -121,12 +121,12 @@
                                 <div class="col-md-6 mb-4 pb-2">
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" th:field="*{allowed}" type="checkbox" id="permissionCheckbox" th:value="true" th:checked="*{allowed}" onchange="toggleFormContentReadOnly()" />
-                                        <label class="form-check-label" for="permissionCheckbox">Có phép</label>
+                                        <label class="form-check-label" for="permissionCheckbox">Allowed</label>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-4 pb-2">
                                     <div id="formContent">
-                                        <h6>Ghi chú</h6>
+                                        <h6>Note</h6>
                                         <label>
                                             <textarea th:field="*{note}" rows="4" cols="40" readonly></textarea>
                                         </label>
@@ -169,11 +169,10 @@
 
 
     function confirmSubmit() {
-        // Hi?n th? h?p tho?i xác nh?n
         let confirmed = confirm("Are you sure you want to submit?");
 
 
-        // Tr? v? true n?u ng??i dùng xác nh?n, ng??c l?i tr? v? false
+        // Tr? v? true n?u ng??i d�ng x�c nh?n, ng??c l?i tr? v? false
         return confirmed;
     }
 </script>
